@@ -1,3 +1,15 @@
+# Aerobreaker's custom Glove80 config
+
+This can be managed alongside the main branch using something like this:
+```
+ git clone --bare git@github.com:Aerobreaker/glove80-zmk.git
+ cd glove80-zmk
+ git worktree add trees/main main
+ git worktree add trees/custom-config custom-config
+```
+
+Based on the wonderful Glorious Engrammer layout, by [Sunaku](https://github.com/sunaku/glove80-keymaps/)
+
 # Aerobreaker's custom ZMK repo
 
 Forked from MoErgo's fork of ZMK.  It's got the latest changes from stock ZMK with a few notable changes:
