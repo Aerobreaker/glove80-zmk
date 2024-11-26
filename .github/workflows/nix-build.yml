@@ -38,7 +38,7 @@ jobs:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
           skipPush: "${{ github.repository != 'moergo-sc/zmk' }}"
       - name: Build Glove80 combined firmware
-        run: nix-build -A glove80_combined -o combined
+        run: nix-build -A glove80_combined_custom -o combined
       - name: Copy result out of nix store
         run: cp combined/glove80.uf2 glove80.uf2
       - name: Upload result
