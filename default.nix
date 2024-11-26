@@ -31,13 +31,19 @@ makeScope newScope (self: with self; {
     shield = "settings_reset";
   };
 
-  glove80_left = zmk.override {
+  glove80_left = zmk.override (rec {
     board = "glove80_lh";
-  };
+  } // (if configPath != null then {
+    keymap = "${configPath}/glove80.keymap";
+    kconfig = "${configPath}/glove80.conf";
+  } else {}));
 
-  glove80_right = zmk.override {
+  glove80_right = zmk.override (rec {
     board = "glove80_rh";
-  };
+  } // (if configPath != null then {
+    keymap = "${configPath}/glove80.keymap";
+    kconfig = "${configPath}/glove80.conf";
+  } else {}));
 
   glove80_combined = combine_uf2 glove80_left glove80_right;
 

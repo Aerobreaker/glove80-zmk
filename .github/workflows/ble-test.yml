@@ -7,6 +7,8 @@ on:
       - "app/tests/ble/**"
       - "app/src/**"
       - "app/run-ble-test.sh"
+    branches:
+      - "main"
   pull_request:
     paths:
       - ".github/workflows/ble-test.yml"

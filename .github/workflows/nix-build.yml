@@ -3,12 +3,14 @@ name: Build Glove80 Firmware
 on:
   push:
     paths:
+      - "config/**"
       - ".github/workflows/nix-build.yml"
       - "default.nix"
       - "app/**"
       - "nix/**"
     branches:
-      - "**"
+      - "main"
+      - "custom-config"
     tags:
       - "**"
   pull_request:
@@ -17,6 +19,9 @@ on:
       - "default.nix"
       - "app/**"
       - "nix/**"
+  workflow_dispatch:
+    branches:
+      - "**"
 
 jobs:
   build:
@@ -41,12 +46,42 @@ jobs:
         with:
           name: glove80.uf2
           path: glove80.uf2
+  merge:
+    name: Autobuild custom config
+    if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || ( github.event_name == 'pull_request' && github.event.pull_request.merged && github.base_ref == 'refs/heads/main' ) }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+      - name: Set git config for automerge
+        run: |
+          git config --local user.email "44306739+Aerobreaker@users.noreply.github.com"
+          git config --local user.name "Aerobreaker"
+      - name: Merge to custom config branch
+        run: |
+          git fetch --unshallow
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          git checkout custom-config
+          git pull
+          git merge --no-ff main -m "${COMMIT_MSG} (Automerge to custom config)"
+      - name: Create release tag
+        if: ${{ ! startswith(github.event.head_commit.message, '[no-rel]') }}
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          VERSION=$(echo $COMMIT_MSG | grep -Eq "^[vV][0-9]+(\.[0-9]*)?" && \
+                      (echo $COMMIT_MSG | grep -q "\." && (echo $COMMIT_MSG | grep -oE "^[vV][0-9]+(\.[0-9]*)?") || echo "$(echo $COMMIT_MSG | grep -oE "^[vV][0-9]+").0") || \
+                      (git describe --tags `git rev-list --tags --max-count=1` | awk -F. '{$NF += 1; OFS="."; print}')\
+                    )
+          git tag $VERSION
+          git push origin custom-config --tags
   release:
     name: Create Release for Tag
     if: >-
-      github.repository == 'moergo-sc/zmk'
+      github.repository == 'Aerobreaker/zmk-custom'
       && github.event_name == 'push'
-      && contains(github.ref, 'refs/tags/v')
+      && contains(github.ref, 'refs/tags/')
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -54,9 +89,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: glove80.uf2
+          github-token: ${{ secrets.GH_TOKEN }}
       - name: Create Release for Tag
         uses: ncipollo/release-action@v1
         with:
           artifacts: "glove80.uf2"
           artifactErrorsFailBuild: true
           generateReleaseNotes: true
+          token: ${{ secrets.GH_TOKEN }}
