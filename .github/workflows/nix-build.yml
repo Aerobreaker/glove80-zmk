@@ -79,7 +79,7 @@ jobs:
   release:
     name: Create Release for Tag
     if: >-
-      github.repository == 'Aerobreaker/zmk-custom'
+      github.repository == 'Aerobreaker/glove80-zmk'
       && github.event_name == 'push'
       && contains(github.ref, 'refs/tags/')
     needs: build
