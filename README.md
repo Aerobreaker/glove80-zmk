@@ -1,3 +1,14 @@
+# Aerobreaker's custom ZMK repo
+
+Forked from MoErgo's fork of ZMK.  It's got the latest changes from stock ZMK with a few notable changes:
+- Mouse support courtesy of [BryanForbes](https://github.com/bryanforbes/zmk) (mouse-3.2-moergo branch)
+- Generic Desktop page support courtesy of [Angweekiat](https://github.com/angweekiat/zmk-strip-kit46) (feat/add-generic-desktop-hid branch)
+- Adaptive keys (antecedant morph) courtesy of [Voidyourwarranty2](https://github.com/voidyourwarranty2/zmk) (devel-adaptive branch)
+- Added ZMK_SPLIT_ROLE_CENTRAL to glove80 left hand for mouse move purposes
+- Added an indicator for an additional BT profile, so that up to 5 BT profiles can be used with the glove80
+
+Github workflows have been customized to suit my needs.  Releasas are built from my custom configuration, available in the custom-config branch
+
 # Zephyr™ Mechanical Keyboard (ZMK) Firmware
 
 [![Discord](https://img.shields.io/discord/719497620560543766)](https://zmk.dev/community/discord/invite)
