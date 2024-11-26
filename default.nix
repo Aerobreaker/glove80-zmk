@@ -1,6 +1,4 @@
-{ pkgs ? (import ./nix/pinned-nixpkgs.nix {}),
-configPath ? null
-}:
+{ pkgs ? (import ./nix/pinned-nixpkgs.nix {}) }:
 let
   inherit (pkgs) newScope;
   inherit (pkgs.lib) makeScope;
@@ -33,21 +31,29 @@ makeScope newScope (self: with self; {
     shield = "settings_reset";
   };
 
-  glove80_left = zmk.override (rec {
+  glove80_left = zmk.override {
     board = "glove80_lh";
-  } // (if configPath != null then {
-    keymap = "${configPath}/glove80.keymap";
-    kconfig = "${configPath}/glove80.conf";
-  } else {}));
+  };
 
-  glove80_right = zmk.override (rec {
+  glove80_right = zmk.override {
     board = "glove80_rh";
-  } // (if configPath != null then {
-    keymap = "${configPath}/glove80.keymap";
-    kconfig = "${configPath}/glove80.conf";
-  } else {}));
+  };
+
+  glove80_left_custom = zmk.override {
+    board = "glove80_lh";
+    keymap = ./config/glove80.keymap;
+    kconfig = ./config/glove80.conf;
+  };
+
+  glove80_right_custom = zmk.override {
+    board = "glove80_rh";
+    keymap = ./config/glove80.keymap;
+    kconfig = ./config/glove80.conf;
+  };
 
   glove80_combined = combine_uf2 glove80_left glove80_right;
+
+  glove80_combined_custom = combine_uf2 glove80_left_custom glove80_right_custom;
 
   glove80_v0_left = zmk.override {
     board = "glove80_v0_lh";
