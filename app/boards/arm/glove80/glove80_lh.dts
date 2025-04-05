@@ -58,7 +58,7 @@
         capslock    = <22>;
         numlock     = <16>;
         scrolllock  = <10>;
-        ble-state   = <3 4 0 1>;
+        ble-state   = <3 4 0 1 2>;
         usb-state   = <5>;
         output-fallback = <15>;
     };
