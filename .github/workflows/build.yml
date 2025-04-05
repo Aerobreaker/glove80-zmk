@@ -5,12 +5,14 @@ on:
     paths:
       - ".github/workflows/build.yml"
       - "app/**"
+    branches:
+      - "disabled"
   pull_request:
     paths:
       - ".github/workflows/build.yml"
       - "app/**"
-  schedule:
-    - cron: "22 4 * * *"
+    branches:
+      - "disabled"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'schedule' }}
