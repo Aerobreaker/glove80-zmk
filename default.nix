@@ -35,10 +35,14 @@ makeScope newScope (self: with self; {
 
   glove80_left = zmk.override {
     board = "glove80_lh";
+    keymap = (if builtins.pathExists ./config/glove80.keymap then ./config/glove80.keymap else null);
+    kconfig = (if builtins.pathExists ./config/glove80.conf then ./config/glove80.conf else null);
   };
 
   glove80_right = zmk.override {
     board = "glove80_rh";
+    keymap = (if builtins.pathExists ./config/glove80.keymap then ./config/glove80.keymap else null);
+    kconfig = (if builtins.pathExists ./config/glove80.conf then ./config/glove80.conf else null);
   };
 
   glove80_combined = combine_uf2 glove80_left glove80_right "glove80";
