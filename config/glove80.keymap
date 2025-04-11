@@ -4072,7 +4072,7 @@ macros {
 // MOUSE_MOTION_MAXIMUM_SPEED defines how quickly the mouse pointer can move.
 //
 #ifndef MOUSE_MOTION_MAXIMUM_SPEED
-#define MOUSE_MOTION_MAXIMUM_SPEED 1800
+#define MOUSE_MOTION_MAXIMUM_SPEED 2700
 #endif
 
 //
