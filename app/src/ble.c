@@ -89,7 +89,9 @@ void init_bt_device_name(void) {
 
 #endif
 
-BUILD_ASSERT(DEVICE_NAME_LEN <= 16, "ERROR: BLE device name is too long. Max length: 16");
+BUILD_ASSERT(
+    DEVICE_NAME_LEN <= CONFIG_BT_DEVICE_NAME_MAX,
+    "ERROR: BLE device name is too long. Max length: " STRINGIFY(CONFIG_BT_DEVICE_NAME_MAX));
 
 static struct bt_data zmk_ble_ad[] = {
     BT_DATA_BYTES(BT_DATA_GAP_APPEARANCE, 0xC1, 0x03),
@@ -99,7 +101,7 @@ static struct bt_data zmk_ble_ad[] = {
                   ),
 };
 
-#if IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
+#if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE) && IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
 
 static bt_addr_le_t peripheral_addrs[ZMK_SPLIT_BLE_PERIPHERAL_COUNT];
 
@@ -395,7 +397,7 @@ int zmk_ble_set_device_name(char *name) {
     return update_advertising();
 }
 
-#if IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
+#if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE) && IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
 
 int zmk_ble_put_peripheral_addr(const bt_addr_le_t *addr) {
     for (int i = 0; i < ZMK_SPLIT_BLE_PERIPHERAL_COUNT; i++) {
@@ -419,10 +421,11 @@ int zmk_ble_put_peripheral_addr(const bt_addr_le_t *addr) {
             LOG_DBG("Storing peripheral %s in slot %d", addr_str, i);
             bt_addr_le_copy(&peripheral_addrs[i], addr);
 
+#if IS_ENABLED(CONFIG_SETTINGS)
             char setting_name[32];
             sprintf(setting_name, "ble/peripheral_addresses/%d", i);
             settings_save_one(setting_name, addr, sizeof(bt_addr_le_t));
-
+#endif // IS_ENABLED(CONFIG_SETTINGS)
             return i;
         }
     }
@@ -483,7 +486,7 @@ static int ble_profiles_handle_set(const char *name, size_t len, settings_read_c
             return err;
         }
     }
-#if IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
+#if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE) && IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
     else if (settings_name_steq(name, "peripheral_addresses", &next) && next) {
         if (len != sizeof(bt_addr_le_t)) {
             return -EINVAL;

@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - ".github/workflows/test.yml"
+      - "app/run-test.sh"
       - "app/tests/**"
       - "app/src/**"
       - "app/include/**"
@@ -12,6 +13,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/test.yml"
+      - "app/run-test.sh"
       - "app/tests/**"
       - "app/src/**"
       - "app/include/**"

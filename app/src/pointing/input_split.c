@@ -104,7 +104,7 @@ int zmk_input_split_peripheral_disconnected(uint8_t reg) {
 
 #else
 
-#include <zmk/split/bluetooth/service.h>
+#include <zmk/split/peripheral.h>
 
 #define ZIS_INST(n)                                                                                \
     static const struct zmk_input_processor_entry processors_##n[] =                               \
@@ -119,8 +119,16 @@ int zmk_input_split_peripheral_disconnected(uint8_t reg) {
             zmk_input_processor_handle_event(processors_##n[i].dev, evt, processors_##n[i].param1, \
                                              processors_##n[i].param2, NULL);                      \
         }                                                                                          \
-        zmk_split_bt_report_input(DT_INST_REG_ADDR(n), evt->type, evt->code, evt->value,           \
-                                  evt->sync);                                                      \
+        struct zmk_split_transport_peripheral_event ev = {                                         \
+            .type = ZMK_SPLIT_TRANSPORT_PERIPHERAL_EVENT_TYPE_INPUT_EVENT,                         \
+            .data = {.input_event = {                                                              \
+                         .reg = DT_INST_REG_ADDR(n),                                               \
+                         .type = evt->type,                                                        \
+                         .code = evt->code,                                                        \
+                         .value = evt->value,                                                      \
+                         .sync = evt->sync,                                                        \
+                     }}};                                                                          \
+        zmk_split_peripheral_report_event(&ev);                                                    \
     }                                                                                              \
     INPUT_CALLBACK_DEFINE(DEVICE_DT_GET(DT_INST_PHANDLE(n, device)), split_input_handler_##n);
 
