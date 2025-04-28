@@ -322,7 +322,7 @@
 //#define ENFORCE_BILATERAL   // cancels single-handed home row mod+tap
 //#define WORLD_USE_COMPOSE   // use native Compose in place of Unicode
 //#define USE_NUMPAD_KEYCODES // use numpad keys for number layer
-#define QU_RESET_TIME 150
+#define QU_RESET_TIME 250
 #define COMBO_HOLDING_TIME 200
 #define LEFT_PINKY_MOD  LGUI
 #define RIGHT_PINKY_MOD RGUI
