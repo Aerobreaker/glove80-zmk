@@ -48,7 +48,7 @@ jobs:
           path: glove80.uf2
   merge:
     name: Autobuild custom config
-    if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || ( github.event_name == 'pull_request' && github.event.pull_request.merged && github.base_ref == 'refs/heads/main' ) }}
+    if: ${{ ! startswith(github.event.head_commit.message, '[no-rel]') }}
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -60,6 +60,7 @@ jobs:
           git config --local user.email "44306739+Aerobreaker@users.noreply.github.com"
           git config --local user.name "Aerobreaker"
       - name: Merge to custom config branch
+        if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || ( github.event_name == 'pull_request' && github.event.pull_request.merged && github.base_ref == 'refs/heads/main' ) }}
         run: |
           git fetch --unshallow
           COMMIT_MSG=$(git log -1 --pretty=%B)
@@ -67,8 +68,11 @@ jobs:
           git pull
           git merge --no-ff main -m "${COMMIT_MSG} (Automerge to custom config)"
       - name: Create release tag
-        if: ${{ ! startswith(github.event.head_commit.message, '[no-rel]') }}
+        if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/custom-config' ) || ( github.event_name == 'pull_request' && github.event.pull_request.merged && github.base_ref == 'refs/heads/custom-config' ) }}
         run: |
+          git fetch --unshallow
+          git checkout custom-config
+          git pull
           COMMIT_MSG=$(git log -1 --pretty=%B)
           VERSION=$(echo $COMMIT_MSG | grep -Eq "^[vV][0-9]+(\.[0-9]*)?" && \
                       (echo $COMMIT_MSG | grep -q "\." && (echo $COMMIT_MSG | grep -oE "^[vV][0-9]+(\.[0-9]*)?") || echo "$(echo $COMMIT_MSG | grep -oE "^[vV][0-9]+").0") || \
