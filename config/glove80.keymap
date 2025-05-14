@@ -3940,12 +3940,12 @@ macros {
     ZMK_MACRO(select_word_right,
         wait-ms = <SELECT_WORD_DELAY>;
         tap-ms = <SELECT_WORD_DELAY>;
-        bindings = <&kp _W(RIGHT) &kp _W(LEFT) &kp _W(LS(RIGHT))>;
+        bindings = <&macro_tap &kp _W(RIGHT) &kp _W(LEFT)>, <&macro_press &kp _W(LS(RIGHT))>, <&macro_pause_for_release>, <&macro_release &kp _W(LS(RIGHT))>;
     )
     ZMK_MACRO(select_word_left,
         wait-ms = <SELECT_WORD_DELAY>;
         tap-ms = <SELECT_WORD_DELAY>;
-        bindings = <&kp _W(LEFT) &kp _W(RIGHT) &kp _W(LS(LEFT))>;
+        bindings = <&macro_tap &kp _W(LEFT) &kp _W(RIGHT)>, <&macro_press &kp _W(LS(LEFT))>, <&macro_pause_for_release>, <&macro_release &kp _W(LS(LEFT))>;
     )
 
     //
@@ -3960,12 +3960,12 @@ macros {
     ZMK_MACRO(extend_word_right,
         wait-ms = <SELECT_WORD_DELAY>;
         tap-ms = <SELECT_WORD_DELAY>;
-        bindings = <&kp _W(LS(RIGHT))>;
+        bindings = <&macro_press &kp _W(LS(RIGHT))>, <&macro_pause_for_release>, <&macro_release &kp _W(LS(RIGHT))>;
     )
     ZMK_MACRO(extend_word_left,
         wait-ms = <SELECT_WORD_DELAY>;
         tap-ms = <SELECT_WORD_DELAY>;
-        bindings = <&kp _W(LS(LEFT))>;
+        bindings = <&macro_press &kp _W(LS(LEFT))>, <&macro_pause_for_release>, <&macro_release &kp _W(LS(LEFT))>;
     )
 
     //
@@ -3980,12 +3980,12 @@ macros {
     ZMK_MACRO(select_line_right,
         wait-ms = <SELECT_WORD_DELAY>;
         tap-ms = <SELECT_WORD_DELAY>;
-        bindings = <&kp _HOME &kp LS(_END)>;
+        bindings = <&macro_tap &kp _HOME>, <&macro_press &kp LS(DOWN)>, <&macro_pause_for_release>, <&macro_release &kp LS(DOWN)>, <&macro_tap &kp LS(UP) &kp LS(_END)>;
     )
     ZMK_MACRO(select_line_left,
         wait-ms = <SELECT_WORD_DELAY>;
         tap-ms = <SELECT_WORD_DELAY>;
-        bindings = <&kp _END &kp LS(_HOME)>;
+        bindings = <&macro_tap &kp _END>, <&macro_press &kp LS(UP)>, <&macro_pause_for_release>, <&macro_release &kp LS(UP)>, <&macro_tap &kp LS(DOWN) &kp LS(_HOME)>;
     )
 
     //
@@ -4000,12 +4000,12 @@ macros {
     ZMK_MACRO(extend_line_right,
         wait-ms = <SELECT_WORD_DELAY>;
         tap-ms = <SELECT_WORD_DELAY>;
-        bindings = <&kp LS(DOWN) &kp LS(_END)>;
+        bindings = <&macro_press &kp LS(DOWN)>, <&macro_pause_for_release>, <&macro_release &kp LS(DOWN)>, <&macro_tap &kp LS(_END)>;
     )
     ZMK_MACRO(extend_line_left,
         wait-ms = <SELECT_WORD_DELAY>;
         tap-ms = <SELECT_WORD_DELAY>;
-        bindings = <&kp LS(UP) &kp LS(_HOME)>;
+        bindings = <&macro_press &kp LS(UP)>, <&macro_pause_for_release>, <&macro_release &kp LS(UP)>, <&macro_tap &kp LS(_HOME)>;
     )
 
 };
