@@ -5,6 +5,7 @@
 , shield ? null
 , keymap ? null
 , kconfig ? null
+, extraModules ? []
 , snippets ? []
 }:
 
@@ -98,7 +99,8 @@ stdenvNoCC.mkDerivation {
   (lib.optional (shield != null) "-DSHIELD=${shield}") ++
   (lib.optional (keymap != null) "-DKEYMAP_FILE=${keymap}") ++
   (lib.optional (kconfig != null) "-DEXTRA_CONF_FILE=${kconfig}") ++
-  (lib.optional (snippets != []) "-DZMK_EXTRA_MODULES=${lib.concatStringsSep ";" snippets}");
+  (lib.optional (extraModules != []) "-DZMK_EXTRA_MODULES=${lib.concatStringsSep ";" extraModules}") ++
+  (lib.optional (snippets != []) "-DSNIPPET=${lib.concatStringsSep ";" snippets}");
 
   nativeBuildInputs = [ cmake ninja python dtc gcc-arm-embedded ];
   buildInputs = [ zephyr ];
