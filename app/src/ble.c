@@ -86,6 +86,8 @@ void init_bt_device_name(void) {
 
 #define DEVICE_NAME CONFIG_BT_DEVICE_NAME
 #define DEVICE_NAME_LEN (sizeof(DEVICE_NAME) - 1)
+#define DEVICE_APPEARANCE                                                                          \
+    (uint8_t) CONFIG_BT_DEVICE_APPEARANCE, (uint8_t)(CONFIG_BT_DEVICE_APPEARANCE >> 8)
 
 #endif
 
@@ -94,7 +96,7 @@ BUILD_ASSERT(
     "ERROR: BLE device name is too long. Max length: " STRINGIFY(CONFIG_BT_DEVICE_NAME_MAX));
 
 static struct bt_data zmk_ble_ad[] = {
-    BT_DATA_BYTES(BT_DATA_GAP_APPEARANCE, 0xC1, 0x03),
+    BT_DATA_BYTES(BT_DATA_GAP_APPEARANCE, DEVICE_APPEARANCE),
     BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
     BT_DATA_BYTES(BT_DATA_UUID16_SOME, 0x12, 0x18, /* HID Service */
                   0x0f, 0x18                       /* Battery Service */
