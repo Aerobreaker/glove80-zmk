@@ -86,6 +86,8 @@ void init_bt_device_name(void) {
 
 #define DEVICE_NAME CONFIG_BT_DEVICE_NAME
 #define DEVICE_NAME_LEN (sizeof(DEVICE_NAME) - 1)
+#define DEVICE_APPEARANCE                                                                          \
+    (uint8_t) CONFIG_BT_DEVICE_APPEARANCE, (uint8_t)(CONFIG_BT_DEVICE_APPEARANCE >> 8)
 
 #endif
 
@@ -94,7 +96,7 @@ BUILD_ASSERT(
     "ERROR: BLE device name is too long. Max length: " STRINGIFY(CONFIG_BT_DEVICE_NAME_MAX));
 
 static struct bt_data zmk_ble_ad[] = {
-    BT_DATA_BYTES(BT_DATA_GAP_APPEARANCE, 0xC1, 0x03),
+    BT_DATA_BYTES(BT_DATA_GAP_APPEARANCE, DEVICE_APPEARANCE),
     BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
     BT_DATA_BYTES(BT_DATA_UUID16_SOME, 0x12, 0x18, /* HID Service */
                   0x0f, 0x18                       /* Battery Service */
@@ -118,8 +120,13 @@ static void raise_profile_changed_event_callback(struct k_work *work) {
 
 K_WORK_DEFINE(raise_profile_changed_event_work, raise_profile_changed_event_callback);
 
-bool zmk_ble_active_profile_is_open(void) {
-    return !bt_addr_le_cmp(&profiles[active_profile].peer, BT_ADDR_LE_ANY);
+bool zmk_ble_active_profile_is_open(void) { return zmk_ble_profile_is_open(active_profile); }
+
+bool zmk_ble_profile_is_open(uint8_t index) {
+    if (index >= ZMK_BLE_PROFILE_COUNT) {
+        return false;
+    }
+    return !bt_addr_le_cmp(&profiles[index].peer, BT_ADDR_LE_ANY);
 }
 
 void set_profile_address(uint8_t index, const bt_addr_le_t *addr) {
@@ -138,9 +145,16 @@ void set_profile_address(uint8_t index, const bt_addr_le_t *addr) {
 }
 
 bool zmk_ble_active_profile_is_connected(void) {
+    return zmk_ble_profile_is_connected(active_profile);
+}
+
+bool zmk_ble_profile_is_connected(uint8_t index) {
+    if (index >= ZMK_BLE_PROFILE_COUNT) {
+        return false;
+    }
     struct bt_conn *conn;
     struct bt_conn_info info;
-    bt_addr_le_t *addr = zmk_ble_active_profile_addr();
+    bt_addr_le_t *addr = &profiles[index].peer;
     if (!bt_addr_le_cmp(addr, BT_ADDR_LE_ANY)) {
         return false;
     } else if ((conn = bt_conn_lookup_addr_le(BT_ID_DEFAULT, addr)) == NULL) {
@@ -288,6 +302,13 @@ int zmk_ble_profile_index(const bt_addr_le_t *addr) {
         }
     }
     return -ENODEV;
+}
+
+bt_addr_le_t *zmk_ble_profile_address(uint8_t index) {
+    if (index >= ZMK_BLE_PROFILE_COUNT) {
+        return (bt_addr_le_t *)(BT_ADDR_LE_NONE);
+    }
+    return &profiles[index].peer;
 }
 
 #if IS_ENABLED(CONFIG_SETTINGS)
