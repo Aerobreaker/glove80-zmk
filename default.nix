@@ -51,6 +51,16 @@ makeScope newScope (self: with self; {
   r = glove80_right;
   c = glove80_combined;
 
+  go60_left = zmk.override {
+    board = "go60_lh";
+  };
+
+  go60_right = zmk.override {
+    board = "go60_rh";
+  };
+
+  go60_combined = combine_uf2 go60_left go60_right "go60";
+
   glove80_v0_left = zmk.override {
     board = "glove80_v0_lh";
   };
