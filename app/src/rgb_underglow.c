@@ -33,7 +33,7 @@
 #include <zmk/workqueue.h>
 
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING)
-#include <zmk/split/bluetooth/central.h>
+#include <zmk/split/central.h>
 #endif
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
@@ -194,9 +194,16 @@ static int zmk_led_generate_status(void);
 
 static void zmk_led_write_pixels(void) {
     static struct led_rgb led_buffer[STRIP_NUM_PIXELS];
-    int bat0 = zmk_battery_state_of_charge();
+    int bat0;
     int blend = 0;
     int reset_ext_power = 0;
+
+#if IS_ENABLED(CONFIG_ZMK_BATTERY_REPORTING)
+    bat0 = zmk_battery_state_of_charge();
+#else
+    bat0 = 100;
+#endif
+
     if (state.status_active) {
         blend = zmk_led_generate_status();
     }
@@ -327,12 +334,12 @@ static int zmk_led_generate_status(void) {
     }
 
     // BATTERY STATUS
+#if IS_ENABLED(CONFIG_ZMK_BATTERY_REPORTING)
     zmk_led_battery_level(zmk_battery_state_of_charge(), underglow_bat_lhs,
                           DT_PROP_LEN(UNDERGLOW_INDICATORS, bat_lhs));
-
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING)
     uint8_t peripheral_level = 0;
-    int rc = zmk_split_get_peripheral_battery_level(0, &peripheral_level);
+    int rc = zmk_split_central_get_peripheral_battery_level(0, &peripheral_level);
 
     if (rc == 0) {
         zmk_led_battery_level(peripheral_level, underglow_bat_rhs,
@@ -342,7 +349,8 @@ static int zmk_led_generate_status(void) {
     } else if (rc == -EINVAL) {
         LOG_ERR("Invalid peripheral index requested for battery level read: 0");
     }
-#endif
+#endif // CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING
+#endif // CONFIG_ZMK_BATTERY_REPORTING
 
     // CAPSLOCK/NUMLOCK/SCROLLOCK STATUS
     zmk_hid_indicators_t led_flags = zmk_hid_indicators_get_current_profile();
@@ -365,6 +373,7 @@ static int zmk_led_generate_status(void) {
     if (!zmk_endpoints_preferred_transport_is_active())
         status_pixels[DT_PROP(UNDERGLOW_INDICATORS, output_fallback)] = red;
 
+#if IS_ENABLED(CONFIG_ZMK_BLE)
     int active_ble_profile_index = zmk_ble_active_profile_index();
     for (uint8_t i = 0;
          i < MIN(ZMK_BLE_PROFILE_COUNT, DT_PROP_LEN(UNDERGLOW_INDICATORS, ble_state)); i++) {
@@ -381,6 +390,7 @@ static int zmk_led_generate_status(void) {
             status_pixels[ble_pixel] = lilac;
         }
     }
+#endif
 
     enum zmk_usb_conn_state usb_state = zmk_usb_get_conn_state();
     if (usb_state == ZMK_USB_CONN_HID &&
@@ -538,12 +548,16 @@ void zmk_rgb_set_ext_power(void) {
         c_power = 0;
     }
     int desired_state = state.on || state.status_active;
+
+#if IS_ENABLED(CONFIG_ZMK_BATTERY_REPORTING)
     // force power off, when battery low (<10%)
     if (state.on && !state.status_active) {
         if (zmk_battery_state_of_charge() < 10) {
             desired_state = false;
         }
     }
+#endif // CONFIG_ZMK_BATTERY_REPORTING
+
     if (desired_state && !c_power) {
         int rc = ext_power_enable(ext_power);
         if (rc != 0) {
@@ -555,7 +569,7 @@ void zmk_rgb_set_ext_power(void) {
             LOG_ERR("Unable to disable EXT_POWER: %d", rc);
         }
     }
-#endif
+#endif // CONFIG_ZMK_RGB_UNDERGLOW_EXT_POWER
 }
 
 int zmk_rgb_underglow_on(void) {
