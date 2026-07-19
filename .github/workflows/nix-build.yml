@@ -31,7 +31,6 @@ jobs:
       matrix:
         board:
           - glove80
-          - go60
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v27
