@@ -300,9 +300,9 @@ const struct led_rgb lilac = HEXRGB(0x6b, 0x1f, 0xce);
 static void zmk_led_battery_level(int bat_level, const uint8_t *addresses, size_t addresses_len) {
     struct led_rgb bat_colour;
 
-    if (bat_level > 40) {
+    if (bat_level >= 40) {
         bat_colour = green;
-    } else if (bat_level > 20) {
+    } else if (bat_level >= 20) {
         bat_colour = yellow;
     } else {
         bat_colour = red;
@@ -344,7 +344,7 @@ static int zmk_led_generate_status(void) {
     if (rc == 0) {
         zmk_led_battery_level(peripheral_level, underglow_bat_rhs,
                               DT_PROP_LEN(UNDERGLOW_INDICATORS, bat_rhs));
-    } else if (rc == -ENOTCONN) {
+    } else if (rc == -ENODEV || rc == -ENOTCONN) {
         zmk_led_fill(red, underglow_bat_rhs, DT_PROP_LEN(UNDERGLOW_INDICATORS, bat_rhs));
     } else if (rc == -EINVAL) {
         LOG_ERR("Invalid peripheral index requested for battery level read: 0");

@@ -20,8 +20,6 @@ on:
       - "app/**"
       - "nix/**"
   workflow_dispatch:
-    branches:
-      - "**"
 
 jobs:
   build:
@@ -31,7 +29,6 @@ jobs:
       matrix:
         board:
           - glove80
-          - go60
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v27
@@ -53,7 +50,7 @@ jobs:
           path: ${{matrix.board}}.uf2
   merge:
     name: Autobuild custom config
-    if: ${{ ! startswith(github.event.head_commit.message, '[no-rel]') }}
+    if: ${{ github.event_name == 'push' && ! startsWith(github.event.head_commit.message, '[no-rel]') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/custom-config') }}
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -65,15 +62,16 @@ jobs:
           git config --local user.email "44306739+Aerobreaker@users.noreply.github.com"
           git config --local user.name "Aerobreaker"
       - name: Merge to custom config branch
-        if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/main' ) || ( github.event_name == 'pull_request' && github.event.pull_request.merged && github.base_ref == 'refs/heads/main' ) }}
+        if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           git fetch --unshallow
           COMMIT_MSG=$(git log -1 --pretty=%B)
           git checkout custom-config
           git pull
           git merge --no-ff main -m "${COMMIT_MSG} (Automerge to custom config)"
+          git push origin custom-config
       - name: Create release tag
-        if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/custom-config' ) || ( github.event_name == 'pull_request' && github.event.pull_request.merged && github.base_ref == 'refs/heads/custom-config' ) }}
+        if: ${{ github.ref == 'refs/heads/custom-config' }}
         run: |
           git fetch --unshallow
           git checkout custom-config
