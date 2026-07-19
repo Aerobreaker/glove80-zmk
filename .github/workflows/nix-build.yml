@@ -72,6 +72,7 @@ jobs:
           git checkout custom-config
           git pull
           git merge --no-ff main -m "${COMMIT_MSG} (Automerge to custom config)"
+          git push origin custom-config
       - name: Create release tag
         if: ${{ ( github.event_name == 'push' && github.ref == 'refs/heads/custom-config' ) || ( github.event_name == 'pull_request' && github.event.pull_request.merged && github.base_ref == 'refs/heads/custom-config' ) }}
         run: |
