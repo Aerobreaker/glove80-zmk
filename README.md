@@ -7,6 +7,28 @@ Forked from MoErgo's fork of ZMK.  It's got the latest changes from stock ZMK wi
 
 Github workflows have been customized to suit my needs.  Releases are built from my custom configuration, available in the custom-config branch
 
+## Building with Nix
+
+This repository is a flake pinned to `nixpkgs-unstable`. To build the combined Glove80 firmware:
+
+```sh
+nix build
+```
+
+The result is available at `result/glove80.uf2`. Named outputs are also available for individual
+halves and other supported boards, for example:
+
+```sh
+nix build .#glove80-left
+nix build .#glove80-right
+nix build .#go60-combined
+```
+
+Use `nix develop` for the CMake-based development shell, or `nix develop .#west` for the West
+workspace shell. The legacy `nix-build -A glove80_combined` interface remains available and uses
+the same revision from `flake.lock`. With direnv and nix-direnv installed, run `direnv allow` once
+per worktree to have `.envrc` enter the default development shell automatically.
+
 # Zephyr™ Mechanical Keyboard (ZMK) Firmware
 
 [![Discord](https://img.shields.io/discord/719497620560543766)](https://zmk.dev/community/discord/invite)

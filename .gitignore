@@ -6,6 +6,7 @@
 /zmk-config
 /build
 result
+/.direnv
 
 # macOS
 *.DS_Store

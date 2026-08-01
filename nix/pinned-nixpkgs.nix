@@ -1,10 +1,14 @@
-{ system ? builtins.currentSystem }:
+{
+  system ? builtins.currentSystem,
+}:
 
 let
-  pin = builtins.fromJSON (builtins.readFile ./pinned-nixpkgs.json);
+  lock = builtins.fromJSON (builtins.readFile ../flake.lock);
+  pin = lock.nodes.nixpkgs.locked;
 
   nixpkgsSrc = builtins.fetchTarball {
-     inherit (pin) url sha256;
+    url = "https://github.com/${pin.owner}/${pin.repo}/archive/${pin.rev}.tar.gz";
+    sha256 = pin.narHash;
   };
 in
 
@@ -13,5 +17,5 @@ import nixpkgsSrc {
   config = {
     allowUnfree = true;
   };
-  overlays = []; # prevent impure overlays
+  overlays = [ ]; # prevent impure overlays
 }
