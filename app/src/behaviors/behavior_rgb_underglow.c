@@ -198,6 +198,13 @@ on_keymap_binding_convert_central_state_dependent_params(struct zmk_behavior_bin
         binding->param2 = zmk_rgb_underglow_calc_effect(1);
         break;
     }
+    case RGB_STATUS_CMD: {
+#if !IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
+        binding->param1 = RGB_STATUS_CMD | zmk_rgb_underglow_get_status_snapshot();
+        binding->param2 = zmk_keymap_layer_state();
+#endif
+        break;
+    }
     default:
         return 0;
     }
@@ -209,6 +216,10 @@ on_keymap_binding_convert_central_state_dependent_params(struct zmk_behavior_bin
 
 static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
                                      struct zmk_behavior_binding_event event) {
+    if ((binding->param1 & 0xff) == RGB_STATUS_CMD) {
+        return zmk_rgb_underglow_status(binding->param1, binding->param2);
+    }
+
     switch (binding->param1) {
     case RGB_TOG_CMD:
         return zmk_rgb_underglow_toggle();
@@ -242,8 +253,6 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
         return zmk_rgb_underglow_set_hsb((struct zmk_led_hsb){.h = (binding->param2 >> 16) & 0xFFFF,
                                                               .s = (binding->param2 >> 8) & 0xFF,
                                                               .b = binding->param2 & 0xFF});
-    case RGB_STATUS_CMD:
-        return zmk_rgb_underglow_status();
     }
 
     return -ENOTSUP;

@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 struct zmk_led_hsb {
     uint16_t h;
     uint8_t s;
@@ -27,4 +29,5 @@ int zmk_rgb_underglow_change_sat(int direction);
 int zmk_rgb_underglow_change_brt(int direction);
 int zmk_rgb_underglow_change_spd(int direction);
 int zmk_rgb_underglow_set_hsb(struct zmk_led_hsb color);
-int zmk_rgb_underglow_status(void);
+uint32_t zmk_rgb_underglow_get_status_snapshot(void);
+int zmk_rgb_underglow_status(uint32_t status_snapshot, uint32_t layer_state);

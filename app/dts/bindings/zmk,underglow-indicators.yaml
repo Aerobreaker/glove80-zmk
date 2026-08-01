@@ -8,10 +8,10 @@ compatible: "zmk,underglow-indicators"
 properties:
   bat-lhs:
     type: array
-    required: true
   bat-rhs:
     type: array
-    required: true
+  bat-local:
+    type: array
   capslock:
     type: int
     required: true
@@ -24,6 +24,8 @@ properties:
   layer-state:
     type: array
     required: true
+  layer-ids:
+    type: array
   ble-state:
     type: array
     required: true
