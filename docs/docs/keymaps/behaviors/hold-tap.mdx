@@ -455,6 +455,10 @@ This is useful for strict bilateral home-row modifiers because even a modifier h
 tapping term will only modify keys in the configured positions, while same-hand modifier
 chords remain available.
 
+On a non-split keyboard, this compatible behaves exactly like a regular
+`zmk,behavior-hold-tap`. This lets shared keymaps use bilateral hold-taps without changing
+the behavior of non-split boards.
+
 ### `hold-while-undecided`
 
 If enabled, the hold behavior will immediately be held on hold-tap press, and will release before the behavior is sent in the event the hold-tap resolves into a tap. With most modifiers this will not affect typing, and is useful for using modifiers with the mouse.

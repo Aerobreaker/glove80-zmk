@@ -926,7 +926,8 @@ static int behavior_hold_tap_init(const struct device *dev) {
         .hold_while_undecided_linger = DT_PROP(n, hold_while_undecided_linger),                    \
         .retro_tap = DT_PROP(n, retro_tap),                                                        \
         .hold_trigger_on_release = DT_PROP(n, hold_trigger_on_release),                            \
-        .enforce_bilateral = DT_NODE_HAS_COMPAT(n, zmk_behavior_hold_tap_bilateral),               \
+        .enforce_bilateral = IS_ENABLED(CONFIG_ZMK_SPLIT) &&                                       \
+                             DT_NODE_HAS_COMPAT(n, zmk_behavior_hold_tap_bilateral),               \
         .hold_trigger_key_positions = DT_PROP(n, hold_trigger_key_positions),                      \
         .hold_trigger_key_positions_len = DT_PROP_LEN(n, hold_trigger_key_positions),              \
     };                                                                                             \
