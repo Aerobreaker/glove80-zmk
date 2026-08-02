@@ -42,6 +42,7 @@ makeScope newScope (
 
     glove80_left = zmk.override {
       board = "glove80_lh";
+      snippets = [ "studio-rpc-usb-uart" ];
       keymap = (if builtins.pathExists ./config/glove80.keymap then ./config/glove80.keymap else null);
       kconfig = (if builtins.pathExists ./config/glove80.conf then ./config/glove80.conf else null);
     };

@@ -1,14 +1,20 @@
-{ stdenvNoCC, lib, buildPackages
-, cmake, ninja, dtc, gcc-arm-embedded
-, zephyr
-, board ? "glove80_lh"
-, shield ? null
-, keymap ? null
-, kconfig ? null
-, extraModules ? []
-, snippets ? []
+{
+  stdenvNoCC,
+  lib,
+  buildPackages,
+  runCommand,
+  cmake,
+  ninja,
+  dtc,
+  gcc-arm-embedded,
+  zephyr,
+  board ? "glove80_lh",
+  shield ? null,
+  keymap ? null,
+  kconfig ? null,
+  extraModules ? [ ],
+  snippets ? [ ],
 }:
-
 
 let
   # from zephyr/scripts/requirements-base.txt
@@ -33,21 +39,53 @@ let
     });
   };
 
-  python = (buildPackages.python312.override { inherit packageOverrides; }).withPackages (ps: with ps; [
-    pyelftools
-    pyyaml
-    canopen
-    packaging
-    progress
-    anytree
-    intelhex
+  python = (buildPackages.python312.override { inherit packageOverrides; }).withPackages (
+    ps: with ps; [
+      pyelftools
+      pyyaml
+      canopen
+      packaging
+      progress
+      anytree
+      intelhex
 
-    # TODO: this was required but not in shell.nix
-    pykwalify
-  ]);
+      # TODO: this was required but not in shell.nix
+      pykwalify
+      protobuf
+      grpcio-tools
+    ]
+  );
+
+  patchedNanopb =
+    runCommand "zmk-module-nanopb-patched"
+      {
+        nativeBuildInputs = [ python ];
+      }
+      ''
+        mkdir -p $out
+        cp -RL ${zephyr.modules.nanopb.modulePath}/. $out/
+        chmod -R u+w $out
+        substituteInPlace $out/generator/proto/__init__.py \
+          --replace-fail "import pkg_resources" "import grpc_tools" \
+          --replace-fail "pkg_resources.resource_filename('grpc_tools', '_proto')" \
+            "os.path.join(os.path.dirname(grpc_tools.__file__), '_proto')"
+        substituteInPlace $out/generator/proto/_utils.py \
+          --replace-fail "import pkg_resources" "import grpc_tools" \
+          --replace-fail "pkg_resources.resource_filename('grpc_tools', '_proto')" \
+            "os.path.join(os.path.dirname(grpc_tools.__file__), '_proto')"
+        patchShebangs $out/generator
+      '';
 
   requiredZephyrModules = [
-    "cmsis" "hal_nordic" "tinycrypt" "lvgl" "picolibc" "segger" "cirque-input-module"
+    "cmsis"
+    "hal_nordic"
+    "tinycrypt"
+    "lvgl"
+    "picolibc"
+    "segger"
+    "nanopb"
+    "zmk-studio-messages"
+    "cirque-input-module"
   ];
 
   # Some Zephyr modules seemingly need a symlink indirection (modulePath),
@@ -55,9 +93,18 @@ let
   # This is not the best way to fix it, but it works around the problem.
   directZephyrModules = [ "cirque-input-module" ];
 
-  zephyrModuleDeps =
-    let modules = lib.attrVals requiredZephyrModules zephyr.modules;
-    in map (x: if builtins.elem x.src.name directZephyrModules then x.src else x.modulePath) modules;
+  zephyrModuleDeps = map (
+    name:
+    let
+      module = zephyr.modules.${name};
+    in
+    if name == "nanopb" then
+      patchedNanopb
+    else if builtins.elem module.src.name directZephyrModules then
+      module.src
+    else
+      module.modulePath
+  ) requiredZephyrModules;
 in
 
 stdenvNoCC.mkDerivation {
@@ -68,19 +115,31 @@ stdenvNoCC.mkDerivation {
   src = builtins.path {
     name = "source";
     path = ./..;
-    filter = path: type:
-      let relPath = lib.removePrefix (toString ./.. + "/") (toString path);
-      in (lib.cleanSourceFilter path type) && ! (
+    filter =
+      path: type:
+      let
+        relPath = lib.removePrefix (toString ./.. + "/") (toString path);
+      in
+      (lib.cleanSourceFilter path type)
+      && !(
         # Meta files
-        relPath == "nix" || lib.hasSuffix ".nix" path ||
-        # Transient state
-        relPath == "build" || relPath == ".west" ||
-        # Fetched by west
-        relPath == "modules" || relPath == "tools" || relPath == "zephyr" ||
-        # Not part of ZMK
-        relPath == "lambda" || relPath == ".github"
+        relPath == "nix"
+        || lib.hasSuffix ".nix" path
+        ||
+          # Transient state
+          relPath == "build"
+        || relPath == ".west"
+        ||
+          # Fetched by west
+          relPath == "modules"
+        || relPath == "tools"
+        || relPath == "zephyr"
+        ||
+          # Not part of ZMK
+          relPath == "lambda"
+        || relPath == ".github"
       );
-    };
+  };
 
   preConfigure = ''
     cmakeFlagsArray+=("-DUSER_CACHE_DIR=$TEMPDIR/.cache")
@@ -100,14 +159,22 @@ stdenvNoCC.mkDerivation {
     "-DCMAKE_AR=${gcc-arm-embedded}/bin/arm-none-eabi-ar"
     "-DCMAKE_RANLIB=${gcc-arm-embedded}/bin/arm-none-eabi-ranlib"
     "-DZEPHYR_MODULES=${lib.concatStringsSep ";" zephyrModuleDeps}"
-  ] ++
-  (lib.optional (shield != null) "-DSHIELD=${shield}") ++
-  (lib.optional (keymap != null) "-DKEYMAP_FILE=${keymap}") ++
-  (lib.optional (kconfig != null) "-DEXTRA_CONF_FILE=${kconfig}") ++
-  (lib.optional (extraModules != []) "-DZMK_EXTRA_MODULES=${lib.concatStringsSep ";" extraModules}") ++
-  (lib.optional (snippets != []) "-DSNIPPET=${lib.concatStringsSep ";" snippets}");
+  ]
+  ++ (lib.optional (shield != null) "-DSHIELD=${shield}")
+  ++ (lib.optional (keymap != null) "-DKEYMAP_FILE=${keymap}")
+  ++ (lib.optional (kconfig != null) "-DEXTRA_CONF_FILE=${kconfig}")
+  ++ (lib.optional (
+    extraModules != [ ]
+  ) "-DZMK_EXTRA_MODULES=${lib.concatStringsSep ";" extraModules}")
+  ++ (lib.optional (snippets != [ ]) "-DSNIPPET=${lib.concatStringsSep ";" snippets}");
 
-  nativeBuildInputs = [ cmake ninja python dtc gcc-arm-embedded ];
+  nativeBuildInputs = [
+    cmake
+    ninja
+    python
+    dtc
+    gcc-arm-embedded
+  ];
   buildInputs = [ zephyr ];
 
   installPhase = ''

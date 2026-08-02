@@ -9,6 +9,9 @@ config BOARD
 config ZMK_SPLIT_ROLE_CENTRAL
     default y
 
+config ZMK_STUDIO
+    default y
+
 config ZMK_SPLIT_ROLE_CENTRAL
     default y
 
