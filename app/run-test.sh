@@ -42,15 +42,38 @@ build_cmd="west build ${ZMK_SRC_DIR:+-s $ZMK_SRC_DIR} -d ${ZMK_BUILD_DIR}/tests/
     -b native_posix_64 -p -- -DCONFIG_ASSERT=y -DZMK_CONFIG="$(realpath $path)" \
     ${ZMK_EXTRA_MODULES:+-DZMK_EXTRA_MODULES="$(realpath ${ZMK_EXTRA_MODULES})"}"
 
-if [ -z ${ZMK_TESTS_VERBOSE} ]; then
-    $build_cmd >/dev/null 2>&1
-else
+test_build_dir=${ZMK_BUILD_DIR}/tests/$testcase
+build_log=$test_build_dir/build.log
+mkdir -p $test_build_dir
+
+$build_cmd >$build_log 2>&1
+build_status=$?
+
+if [ -n "${ZMK_TESTS_VERBOSE}" ]; then
     echo "ZMK_SRC_DIR:   ${ZMK_SRC_DIR:-.}"
     echo "ZMK_BUILD_DIR: $ZMK_BUILD_DIR"
-    $build_cmd
+    cat $build_log
 fi
 
-if [ $? -gt 0 ]; then
+if [ -f $path/build_failure.patterns ]; then
+    if [ $build_status -eq 0 ]; then
+        echo "FAILED: $testcase unexpectedly built" | tee -a ${ZMK_BUILD_DIR}/tests/pass-fail.log
+        exit 1
+    fi
+
+    if ! grep -q -f $path/build_failure.patterns $build_log; then
+        echo "FAILED: $testcase failed for an unexpected reason" |
+            tee -a ${ZMK_BUILD_DIR}/tests/pass-fail.log
+        cat $build_log
+        exit 1
+    fi
+
+    echo "PASS: $testcase failed to build as expected" |
+        tee -a ${ZMK_BUILD_DIR}/tests/pass-fail.log
+    exit 0
+fi
+
+if [ $build_status -gt 0 ]; then
     echo "FAILED: $testcase did not build" | tee -a ${ZMK_BUILD_DIR}/tests/pass-fail.log
     exit 1
 fi
