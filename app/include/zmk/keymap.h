@@ -10,6 +10,27 @@
 #include <zephyr/sys/util.h>
 #include <zephyr/devicetree.h>
 
+#if IS_ENABLED(CONFIG_ZMK_BLE)
+#include <dt-bindings/zmk/bt.h>
+#include <zmk/ble/profile_count.h>
+
+#define ZMK_KEYMAP_BT_PROFILE_IS_VALID(idx, node)                                                  \
+    COND_CODE_1(                                                                                   \
+        DT_NODE_HAS_COMPAT(DT_PHANDLE_BY_IDX(node, bindings, idx), zmk_behavior_bluetooth),       \
+        (((DT_PHA_BY_IDX(node, bindings, idx, param1) != BT_SEL_CMD) &&                           \
+          (DT_PHA_BY_IDX(node, bindings, idx, param1) != BT_DISC_CMD)) ||                          \
+         (DT_PHA_BY_IDX(node, bindings, idx, param2) < ZMK_BLE_PROFILE_COUNT)),                    \
+        (1))
+#else
+#define ZMK_KEYMAP_BT_PROFILE_IS_VALID(idx, node) 1
+#endif
+
+#define ZMK_KEYMAP_VALIDATE_BT_PROFILE(idx, node)                                                  \
+    (0 * sizeof(struct {                                                                           \
+         int bluetooth_profile_index_is_not_available                                             \
+             : ZMK_KEYMAP_BT_PROFILE_IS_VALID(idx, node) ? 1 : -1;                                \
+     }))
+
 #define ZMK_KEYMAP_LAYERS_FOREACH(_fn)                                                             \
     COND_CODE_1(IS_ENABLED(CONFIG_ZMK_STUDIO), (DT_FOREACH_CHILD(DT_INST(0, zmk_keymap), _fn)),    \
                 (DT_FOREACH_CHILD_STATUS_OKAY(DT_INST(0, zmk_keymap), _fn)))
@@ -91,5 +112,6 @@ int zmk_keymap_position_state_changed(uint8_t source, uint32_t position, bool pr
         .param1 = COND_CODE_0(DT_PHA_HAS_CELL_AT_IDX(drv_inst, bindings, idx, param1), (0),        \
                               (DT_PHA_BY_IDX(drv_inst, bindings, idx, param1))),                   \
         .param2 = COND_CODE_0(DT_PHA_HAS_CELL_AT_IDX(drv_inst, bindings, idx, param2), (0),        \
-                              (DT_PHA_BY_IDX(drv_inst, bindings, idx, param2))),                   \
+                              (DT_PHA_BY_IDX(drv_inst, bindings, idx, param2))) +                  \
+                  ZMK_KEYMAP_VALIDATE_BT_PROFILE(idx, drv_inst),                                  \
     }

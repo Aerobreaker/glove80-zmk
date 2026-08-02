@@ -7,17 +7,8 @@
 #pragma once
 
 #include <zmk/keys.h>
+#include <zmk/ble/profile_count.h>
 #include <zmk/ble/profile.h>
-
-#define ZMK_BLE_IS_CENTRAL                                                                         \
-    (IS_ENABLED(CONFIG_ZMK_SPLIT_BLE) && IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL))
-
-#if ZMK_BLE_IS_CENTRAL
-#define ZMK_BLE_PROFILE_COUNT (CONFIG_BT_MAX_PAIRED - CONFIG_ZMK_SPLIT_BLE_CENTRAL_PERIPHERALS)
-#define ZMK_SPLIT_BLE_PERIPHERAL_COUNT CONFIG_ZMK_SPLIT_BLE_CENTRAL_PERIPHERALS
-#else
-#define ZMK_BLE_PROFILE_COUNT CONFIG_BT_MAX_PAIRED
-#endif
 
 void zmk_ble_clear_bonds(void);
 int zmk_ble_prof_next(void);
