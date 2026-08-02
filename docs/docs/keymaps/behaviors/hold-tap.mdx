@@ -423,6 +423,38 @@ If set, instead of the keys **not** listed in `hold-trigger-key-positions` produ
 };
 ```
 
+### Bilateral hold-tap
+
+By default, `hold-trigger-key-positions` only affects a hold-tap until its tapping term
+expires. After that, a timer-decided hold remains active regardless of which key is pressed.
+
+Use the `zmk,behavior-hold-tap-bilateral` behavior to keep enforcing the positional
+restriction until the hold-tap key is released. If a decided hold is active and a
+non-bilateral hold-tap key outside
+`hold-trigger-key-positions` is pressed, the hold behavior is released and the hold-tap is
+converted to its tap behavior before the new key is processed.
+
+If another bilateral hold-tap is pressed outside the trigger positions, the first
+hold-tap remains active until the second one is decided. A hold decision preserves the
+same-hand modifier chord. A tap decision converts the earlier same-hand modifiers back to
+their tap behaviors before emitting the new tap.
+
+```dts
+bilateral_mt: bilateral_mod_tap {
+    compatible = "zmk,behavior-hold-tap-bilateral";
+    #binding-cells = <2>;
+    flavor = "tap-preferred";
+    tapping-term-ms = <280>;
+    bindings = <&kp>, <&kp>;
+    hold-trigger-key-positions = < ... >;
+    hold-trigger-on-release;
+};
+```
+
+This is useful for strict bilateral home-row modifiers because even a modifier held past its
+tapping term will only modify keys in the configured positions, while same-hand modifier
+chords remain available.
+
 ### `hold-while-undecided`
 
 If enabled, the hold behavior will immediately be held on hold-tap press, and will release before the behavior is sent in the event the hold-tap resolves into a tap. With most modifiers this will not affect typing, and is useful for using modifiers with the mouse.

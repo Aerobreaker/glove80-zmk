@@ -1,0 +1,28 @@
+#include <dt-bindings/zmk/keys.h>
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/kscan_mock.h>
+
+/ {
+    behaviors {
+        btp: behavior_bilateral_tap_preferred {
+            compatible = "zmk,behavior-hold-tap-bilateral";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <300>;
+            quick-tap-ms = <200>;
+            bindings = <&kp>, <&kp>;
+            hold-trigger-key-positions = <2>;
+            hold-trigger-on-release;
+        };
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        default_layer {
+            bindings = <
+                &btp LEFT_SHIFT F &btp LEFT_CONTROL J
+                &kp D &kp E>;
+        };
+    };
+};

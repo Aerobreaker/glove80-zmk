@@ -1,0 +1,4 @@
+s/.*hid_listener_keycode/kp/p
+s/.*on_hold_tap_binding/ht_binding/p
+s/.*decide_hold_tap/ht_decide/p
+s/.*cancel_bilateral_holds: /bilateral_revert: /p

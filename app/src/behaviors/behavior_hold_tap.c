@@ -13,6 +13,7 @@
 #include <zephyr/logging/log.h>
 #include <zmk/behavior.h>
 #include <zmk/matrix.h>
+#include <zmk/keymap.h>
 #include <zmk/endpoints.h>
 #include <zmk/event_manager.h>
 #include <zmk/events/position_state_changed.h>
@@ -21,7 +22,8 @@
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
-#if DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT)
+#if DT_HAS_COMPAT_STATUS_OKAY(zmk_behavior_hold_tap) ||                                            \
+    DT_HAS_COMPAT_STATUS_OKAY(zmk_behavior_hold_tap_bilateral)
 
 #define ZMK_BHV_HOLD_TAP_MAX_HELD CONFIG_ZMK_BEHAVIOR_HOLD_TAP_MAX_HELD
 #define ZMK_BHV_HOLD_TAP_MAX_CAPTURED_EVENTS CONFIG_ZMK_BEHAVIOR_HOLD_TAP_MAX_CAPTURED_EVENTS
@@ -63,6 +65,7 @@ struct behavior_hold_tap_config {
     bool hold_while_undecided_linger;
     bool retro_tap;
     bool hold_trigger_on_release;
+    bool enforce_bilateral;
     int32_t hold_trigger_key_positions_len;
     int32_t hold_trigger_key_positions[];
 };
@@ -72,6 +75,8 @@ struct behavior_hold_tap_data {
     struct behavior_parameter_metadata_set set;
 #endif // IS_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA)
 };
+
+static const struct behavior_driver_api behavior_hold_tap_driver_api;
 
 // this data is specific for each hold-tap
 struct active_hold_tap {
@@ -492,14 +497,56 @@ static int release_binding(struct active_hold_tap *hold_tap) {
     }
 }
 
-static bool is_first_other_key_pressed_trigger_key(struct active_hold_tap *hold_tap) {
+static bool is_hold_trigger_position(struct active_hold_tap *hold_tap, int32_t position) {
     for (int i = 0; i < hold_tap->config->hold_trigger_key_positions_len; i++) {
-        if (hold_tap->config->hold_trigger_key_positions[i] ==
-            hold_tap->position_of_first_other_key_pressed) {
+        if (hold_tap->config->hold_trigger_key_positions[i] == position) {
             return true;
         }
     }
     return false;
+}
+
+static bool is_first_other_key_pressed_trigger_key(struct active_hold_tap *hold_tap) {
+    return is_hold_trigger_position(hold_tap, hold_tap->position_of_first_other_key_pressed);
+}
+
+static void cancel_bilateral_holds(uint32_t position) {
+    for (int i = 0; i < ZMK_BHV_HOLD_TAP_MAX_HELD; i++) {
+        struct active_hold_tap *hold_tap = &active_hold_taps[i];
+
+        if (hold_tap->position == ZMK_BHV_HOLD_TAP_POSITION_NOT_USED ||
+            hold_tap->position == position ||
+            (hold_tap->status != STATUS_HOLD_TIMER && hold_tap->status != STATUS_HOLD_INTERRUPT) ||
+            !hold_tap->config->enforce_bilateral || is_hold_trigger_position(hold_tap, position)) {
+            continue;
+        }
+
+        LOG_DBG("%d reverting bilateral hold to tap after same-hand position %d",
+                hold_tap->position, position);
+        release_binding(hold_tap);
+        hold_tap->status = STATUS_TAP;
+        press_binding(hold_tap);
+    }
+}
+
+static bool is_bilateral_hold_tap_at_position(uint32_t position) {
+    zmk_keymap_layer_id_t layer_id =
+        zmk_keymap_layer_index_to_id(zmk_keymap_highest_layer_active());
+    const struct zmk_behavior_binding *binding =
+        zmk_keymap_get_layer_binding_at_idx(layer_id, position);
+
+    if (binding == NULL) {
+        return false;
+    }
+
+    const struct device *behavior = zmk_behavior_get_binding(binding->behavior_dev);
+
+    if (behavior == NULL || behavior->api != &behavior_hold_tap_driver_api) {
+        return false;
+    }
+
+    const struct behavior_hold_tap_config *config = behavior->config;
+    return config->enforce_bilateral;
 }
 
 // Force a tap decision if the positional conditions for a hold decision are not met.
@@ -570,6 +617,11 @@ static void decide_hold_tap(struct active_hold_tap *hold_tap,
             status_str(hold_tap->status), flavor_str(hold_tap->config->flavor),
             decision_moment_str(decision_moment));
     undecided_hold_tap = NULL;
+
+    if (hold_tap->status == STATUS_TAP && hold_tap->config->enforce_bilateral) {
+        cancel_bilateral_holds(hold_tap->position);
+    }
+
     press_binding(hold_tap);
     release_captured_events();
 }
@@ -727,6 +779,10 @@ static const struct behavior_driver_api behavior_hold_tap_driver_api = {
 static int position_state_changed_listener(const zmk_event_t *eh) {
     struct zmk_position_state_changed *ev = as_zmk_position_state_changed(eh);
 
+    if (ev->state && !is_bilateral_hold_tap_at_position(ev->position)) {
+        cancel_bilateral_holds(ev->position);
+    }
+
     update_hold_status_for_retro_tap(ev->position);
 
     if (undecided_hold_tap == NULL) {
@@ -859,26 +915,27 @@ static int behavior_hold_tap_init(const struct device *dev) {
 
 #define KP_INST(n)                                                                                 \
     static const struct behavior_hold_tap_config behavior_hold_tap_config_##n = {                  \
-        .tapping_term_ms = DT_INST_PROP(n, tapping_term_ms),                                       \
-        .hold_behavior_dev = DEVICE_DT_NAME(DT_INST_PHANDLE_BY_IDX(n, bindings, 0)),               \
-        .tap_behavior_dev = DEVICE_DT_NAME(DT_INST_PHANDLE_BY_IDX(n, bindings, 1)),                \
-        .quick_tap_ms = DT_INST_PROP(n, quick_tap_ms),                                             \
-        .require_prior_idle_ms = DT_INST_PROP(n, global_quick_tap)                                 \
-                                     ? DT_INST_PROP(n, quick_tap_ms)                               \
-                                     : DT_INST_PROP(n, require_prior_idle_ms),                     \
-        .flavor = DT_ENUM_IDX(DT_DRV_INST(n), flavor),                                             \
-        .hold_while_undecided = DT_INST_PROP(n, hold_while_undecided),                             \
-        .hold_while_undecided_linger = DT_INST_PROP(n, hold_while_undecided_linger),               \
-        .retro_tap = DT_INST_PROP(n, retro_tap),                                                   \
-        .hold_trigger_on_release = DT_INST_PROP(n, hold_trigger_on_release),                       \
-        .hold_trigger_key_positions = DT_INST_PROP(n, hold_trigger_key_positions),                 \
-        .hold_trigger_key_positions_len = DT_INST_PROP_LEN(n, hold_trigger_key_positions),         \
+        .tapping_term_ms = DT_PROP(n, tapping_term_ms),                                            \
+        .hold_behavior_dev = DEVICE_DT_NAME(DT_PHANDLE_BY_IDX(n, bindings, 0)),                    \
+        .tap_behavior_dev = DEVICE_DT_NAME(DT_PHANDLE_BY_IDX(n, bindings, 1)),                     \
+        .quick_tap_ms = DT_PROP(n, quick_tap_ms),                                                  \
+        .require_prior_idle_ms = DT_PROP(n, global_quick_tap) ? DT_PROP(n, quick_tap_ms)           \
+                                                              : DT_PROP(n, require_prior_idle_ms), \
+        .flavor = DT_ENUM_IDX(n, flavor),                                                          \
+        .hold_while_undecided = DT_PROP(n, hold_while_undecided),                                  \
+        .hold_while_undecided_linger = DT_PROP(n, hold_while_undecided_linger),                    \
+        .retro_tap = DT_PROP(n, retro_tap),                                                        \
+        .hold_trigger_on_release = DT_PROP(n, hold_trigger_on_release),                            \
+        .enforce_bilateral = DT_NODE_HAS_COMPAT(n, zmk_behavior_hold_tap_bilateral),               \
+        .hold_trigger_key_positions = DT_PROP(n, hold_trigger_key_positions),                      \
+        .hold_trigger_key_positions_len = DT_PROP_LEN(n, hold_trigger_key_positions),              \
     };                                                                                             \
     static struct behavior_hold_tap_data behavior_hold_tap_data_##n = {};                          \
-    BEHAVIOR_DT_INST_DEFINE(n, behavior_hold_tap_init, NULL, &behavior_hold_tap_data_##n,          \
-                            &behavior_hold_tap_config_##n, POST_KERNEL,                            \
-                            CONFIG_KERNEL_INIT_PRIORITY_DEFAULT, &behavior_hold_tap_driver_api);
+    BEHAVIOR_DT_DEFINE(n, behavior_hold_tap_init, NULL, &behavior_hold_tap_data_##n,               \
+                       &behavior_hold_tap_config_##n, POST_KERNEL,                                 \
+                       CONFIG_KERNEL_INIT_PRIORITY_DEFAULT, &behavior_hold_tap_driver_api);
 
-DT_INST_FOREACH_STATUS_OKAY(KP_INST)
+DT_FOREACH_STATUS_OKAY(zmk_behavior_hold_tap, KP_INST)
+DT_FOREACH_STATUS_OKAY(zmk_behavior_hold_tap_bilateral, KP_INST)
 
-#endif /* DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT) */
+#endif /* hold-tap or bilateral hold-tap */
