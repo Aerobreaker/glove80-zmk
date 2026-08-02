@@ -92,6 +92,9 @@ static struct rgb_underglow_state state;
 #define ZMK_RGB_STATUS_ACTIVE_PROFILE_SHIFT 22
 #define ZMK_RGB_STATUS_USB_SHIFT 25
 #define ZMK_RGB_STATUS_FALLBACK_SHIFT 27
+/* Sent by the central so split peripherals do not mistake nonexistent host slots for unused ones. */
+#define ZMK_RGB_STATUS_BLE_PROFILE_COUNT_SHIFT 28
+#define ZMK_RGB_STATUS_BLE_PROFILE_COUNT_MASK 0x07
 
 static uint32_t status_snapshot;
 static uint32_t status_layer_state;
@@ -412,11 +415,14 @@ static int zmk_led_generate_status(void) {
     bool active_endpoint_is_ble = status_snapshot & BIT(ZMK_RGB_STATUS_ACTIVE_TRANSPORT_SHIFT);
     uint8_t active_ble_profile_index =
         (status_snapshot >> ZMK_RGB_STATUS_ACTIVE_PROFILE_SHIFT) & 0x07;
+    uint8_t ble_profile_count =
+        (status_snapshot >> ZMK_RGB_STATUS_BLE_PROFILE_COUNT_SHIFT) &
+        ZMK_RGB_STATUS_BLE_PROFILE_COUNT_MASK;
 
     if (status_snapshot & BIT(ZMK_RGB_STATUS_FALLBACK_SHIFT))
         status_pixels[DT_PROP(UNDERGLOW_INDICATORS, output_fallback)] = red;
 
-    for (uint8_t i = 0; i < ARRAY_SIZE(underglow_ble_state); i++) {
+    for (uint8_t i = 0; i < MIN(ARRAY_SIZE(underglow_ble_state), ble_profile_count); i++) {
         uint8_t status =
             (status_snapshot >> (ZMK_RGB_STATUS_BLE_SHIFT + (i * ZMK_RGB_STATUS_BLE_BITS))) & 0x03;
         int ble_pixel = underglow_ble_state[i];
@@ -707,7 +713,11 @@ uint32_t zmk_rgb_underglow_get_status_snapshot(void) {
 #endif
 
 #if IS_ENABLED(CONFIG_ZMK_BLE)
-    for (uint8_t i = 0; i < MIN(ZMK_BLE_PROFILE_COUNT, ZMK_RGB_STATUS_BLE_PROFILE_COUNT); i++) {
+    uint8_t ble_profile_count = MIN(ZMK_BLE_PROFILE_COUNT, ZMK_RGB_STATUS_BLE_PROFILE_COUNT);
+    snapshot |= ((uint32_t)ble_profile_count & ZMK_RGB_STATUS_BLE_PROFILE_COUNT_MASK)
+                << ZMK_RGB_STATUS_BLE_PROFILE_COUNT_SHIFT;
+
+    for (uint8_t i = 0; i < ble_profile_count; i++) {
         snapshot |= ((uint32_t)zmk_ble_profile_status(i) & 0x03)
                     << (ZMK_RGB_STATUS_BLE_SHIFT + (i * ZMK_RGB_STATUS_BLE_BITS));
     }
