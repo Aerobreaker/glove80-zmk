@@ -9,9 +9,6 @@ config BOARD
 config ZMK_SPLIT_ROLE_CENTRAL
     default y
 
-config ZMK_STUDIO
-    default y
-
 config ZMK_SPLIT_ROLE_CENTRAL
     default y
 
@@ -25,6 +22,18 @@ config BOARD
 endif # BOARD_GLOVE80_RH
 
 if BOARD_GLOVE80_LH || BOARD_GLOVE80_RH
+
+config ZMK_STUDIO
+    default y
+
+config ZMK_GLOVE80_STATUS_ON_BOTH_HALVES
+    bool "Show Glove80 status indicators on both halves"
+    depends on !ZMK_STUDIO
+    default n
+    help
+      Show local battery, lock, and complementary layer indicators on each
+      half. Connection and output indicators remain on the left half only.
+      This mode is mutually exclusive with ZMK Studio.
 
 config ZMK_SPLIT
     default y

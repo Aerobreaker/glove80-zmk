@@ -28,10 +28,7 @@ properties:
     type: array
   ble-state:
     type: array
-    required: true
   usb-state:
     type: int
-    required: true
   output-fallback:
     type: int
-    required: true

@@ -7,6 +7,18 @@ Forked from MoErgo's fork of ZMK.  It's got the latest changes from stock ZMK wi
 
 Github workflows have been customized to suit my needs.  Releases are built from my custom configuration, available in the custom-config branch
 
+## Glove80 Studio and dual-half status
+
+Glove80 firmware enables ZMK Studio by default. The optional
+`glove80-status-on-both-halves` snippet instead enables complementary status
+indicators on both halves and disables Studio; the two modes are intentionally
+mutually exclusive.
+
+In dual-half status mode, both halves show their local battery and lock state.
+The left half shows layers 1-6 and 13-18 plus Bluetooth/USB output state, while
+the right half shows layers 7-12 and 19-24 without duplicating the output-state
+indicators.
+
 ## Building with Nix
 
 This repository is a flake pinned to `nixpkgs-unstable`. To build the combined Glove80 firmware:

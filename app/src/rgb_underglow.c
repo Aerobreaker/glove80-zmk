@@ -302,7 +302,9 @@ static const uint8_t underglow_layer_state[] = DT_PROP(UNDERGLOW_INDICATORS, lay
 #if DT_NODE_HAS_PROP(UNDERGLOW_INDICATORS, layer_ids)
 static const uint8_t underglow_layer_ids[] = DT_PROP(UNDERGLOW_INDICATORS, layer_ids);
 #endif
+#if DT_NODE_HAS_PROP(UNDERGLOW_INDICATORS, ble_state)
 static const uint8_t underglow_ble_state[] = DT_PROP(UNDERGLOW_INDICATORS, ble_state);
+#endif
 #if DT_NODE_HAS_PROP(UNDERGLOW_INDICATORS, bat_local)
 static const uint8_t underglow_bat_local[] = DT_PROP(UNDERGLOW_INDICATORS, bat_local);
 #else
@@ -314,8 +316,10 @@ static const uint8_t underglow_bat_rhs[] = DT_PROP(UNDERGLOW_INDICATORS, bat_rhs
 BUILD_ASSERT(ARRAY_SIZE(underglow_layer_state) == ARRAY_SIZE(underglow_layer_ids),
              "Underglow layer-state and layer-ids must have the same number of entries");
 #endif
+#if DT_NODE_HAS_PROP(UNDERGLOW_INDICATORS, ble_state)
 BUILD_ASSERT(ARRAY_SIZE(underglow_ble_state) <= ZMK_RGB_STATUS_BLE_PROFILE_COUNT,
              "Underglow status supports at most five BLE profile indicators");
+#endif
 
 #define HEXRGB(R, G, B)                                                                            \
     ((struct led_rgb){                                                                             \
@@ -412,15 +416,17 @@ static int zmk_led_generate_status(void) {
             status_pixels[underglow_layer_state[i]] = magenta;
     }
 
+#if DT_NODE_HAS_PROP(UNDERGLOW_INDICATORS, ble_state) ||                                     \
+    DT_NODE_HAS_PROP(UNDERGLOW_INDICATORS, usb_state)
     bool active_endpoint_is_ble = status_snapshot & BIT(ZMK_RGB_STATUS_ACTIVE_TRANSPORT_SHIFT);
+#endif
+
+#if DT_NODE_HAS_PROP(UNDERGLOW_INDICATORS, ble_state)
     uint8_t active_ble_profile_index =
         (status_snapshot >> ZMK_RGB_STATUS_ACTIVE_PROFILE_SHIFT) & 0x07;
     uint8_t ble_profile_count =
         (status_snapshot >> ZMK_RGB_STATUS_BLE_PROFILE_COUNT_SHIFT) &
         ZMK_RGB_STATUS_BLE_PROFILE_COUNT_MASK;
-
-    if (status_snapshot & BIT(ZMK_RGB_STATUS_FALLBACK_SHIFT))
-        status_pixels[DT_PROP(UNDERGLOW_INDICATORS, output_fallback)] = red;
 
     for (uint8_t i = 0; i < MIN(ARRAY_SIZE(underglow_ble_state), ble_profile_count); i++) {
         uint8_t status =
@@ -437,7 +443,9 @@ static int zmk_led_generate_status(void) {
             status_pixels[ble_pixel] = lilac;
         }
     }
+#endif
 
+#if DT_NODE_HAS_PROP(UNDERGLOW_INDICATORS, usb_state)
     enum zmk_usb_conn_state usb_state = (status_snapshot >> ZMK_RGB_STATUS_USB_SHIFT) & 0x03;
     if (usb_state == ZMK_USB_CONN_HID && !active_endpoint_is_ble) { // connected AND active
         status_pixels[DT_PROP(UNDERGLOW_INDICATORS, usb_state)] = white;
@@ -448,6 +456,12 @@ static int zmk_led_generate_status(void) {
     } else if (usb_state == ZMK_USB_CONN_NONE) { // disconnected
         status_pixels[DT_PROP(UNDERGLOW_INDICATORS, usb_state)] = lilac;
     }
+#endif
+
+#if DT_NODE_HAS_PROP(UNDERGLOW_INDICATORS, output_fallback)
+    if (status_snapshot & BIT(ZMK_RGB_STATUS_FALLBACK_SHIFT))
+        status_pixels[DT_PROP(UNDERGLOW_INDICATORS, output_fallback)] = red;
+#endif
 
     int16_t blend = 256;
     if (state.status_animation_step < (500 / 25)) {
