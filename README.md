@@ -7,17 +7,23 @@ Forked from MoErgo's fork of ZMK.  It's got the latest changes from stock ZMK wi
 
 Github workflows have been customized to suit my needs.  Releases are built from my custom configuration, available in the custom-config branch
 
-## Glove80 Studio and dual-half status
+## Split Studio, power management, and status
 
-Glove80 firmware enables ZMK Studio by default. The optional
-`glove80-status-on-both-halves` snippet instead enables complementary status
-indicators on both halves and disables Studio; the two modes are intentionally
-mutually exclusive.
+Glove80 firmware defaults `CONFIG_ZMK_STUDIO_SPLIT=y`. This generic split option
+enables Studio on the central half and device power management on every half.
+Other split keyboards can opt in through their shared configuration; all halves
+must be built with the same value. Setting `CONFIG_PM_DEVICE=y` directly in a
+shared configuration likewise enables power management on every half.
 
-In dual-half status mode, both halves show their local battery and lock state.
-The left half shows layers 1-6 and 13-18 plus Bluetooth/USB output state, while
-the right half shows layers 7-12 and 19-24 without duplicating the output-state
-indicators.
+The Glove80 devicetree provides complementary status layouts on both halves.
+Both show their local battery and lock state. The left half shows layers 1-6 and
+13-18 plus Bluetooth/USB output state, while the right half shows layers 7-12
+and 19-24 without duplicating the output-state indicators.
+
+Status display is activated explicitly with the zero-parameter `&rgb_stat`
+behavior, which is available to keymaps and ZMK Studio. The stock Glove80 and
+Go60 keymaps use this behavior. The legacy `&rgb_ug RGB_STATUS` command remains
+available for compatibility with existing MoErgo keymaps.
 
 ## Building with Nix
 

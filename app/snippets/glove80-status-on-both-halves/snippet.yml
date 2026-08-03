@@ -1,6 +1,0 @@
-name: glove80-status-on-both-halves
-append:
-  # Devicetree preprocessing happens before Kconfig, so pass the matching
-  # preprocessor symbol explicitly as well as loading the Kconfig fragment.
-  DTS_EXTRA_CPPFLAGS: -DZMK_GLOVE80_STATUS_ON_BOTH_HALVES
-  EXTRA_CONF_FILE: glove80-status-on-both-halves.conf

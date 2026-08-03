@@ -18,9 +18,7 @@
         zmk,underglow = &led_strip;
         zmk,backlight = &back_led_backlight;
         zmk,battery   = &vbatt;
-#if defined(ZMK_GLOVE80_STATUS_ON_BOTH_HALVES)
         zmk,underglow-indicators = &underglow_indicators;
-#endif
     };
 
     back_led_backlight: pwmleds {
@@ -41,7 +39,6 @@
         compatible = "zmk,battery-nrf-vddh";
     };
 
-#if defined(ZMK_GLOVE80_STATUS_ON_BOTH_HALVES)
     underglow_indicators: underglow-indicators {
         compatible  = "zmk,underglow-indicators";
         layer-state = <6 11 17 23 29 35 7 12 18 24 30 36>;
@@ -51,7 +48,6 @@
         numlock     = <16>;
         scrolllock  = <10>;
     };
-#endif
 
     glove80_ext: connector {
         compatible = "moergo,glove80-ext";
