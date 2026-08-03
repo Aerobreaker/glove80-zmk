@@ -357,6 +357,10 @@ int32_t zmk_hid_generic_desktop_code_to_offset(zmk_key_t code) {
         return code - HID_USAGE_GD_SYSTEM_POWER_DOWN;
     }
 
+    if (code == HID_USAGE_GD_SYSTEM_MICROPHONE_MUTE) {
+        return 15;
+    }
+
     LOG_ERR("Unhandled generic desktop code 0x%02X", code);
     return -ENOTSUP;
 }
