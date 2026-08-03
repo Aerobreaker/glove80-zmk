@@ -1,8 +1,18 @@
 # Copyright (c) 2024 The ZMK Contributors
 # SPDX-License-Identifier: MIT
 
+config ZMK_STUDIO_SPLIT
+    bool "Studio support for split keyboards"
+    depends on ZMK_SPLIT
+    select PM_DEVICE
+    help
+      Enable ZMK Studio on the central half and device power management on
+      every half of a split keyboard. Set this option to the same value when
+      building each half.
+
 menuconfig ZMK_STUDIO
     bool "Studio Support"
+    default y if ZMK_STUDIO_SPLIT && ZMK_SPLIT_ROLE_CENTRAL
     select ZMK_STUDIO_RPC if !ZMK_SPLIT || ZMK_SPLIT_ROLE_CENTRAL
     select PM_DEVICE # Needed for physical layout switching
     help

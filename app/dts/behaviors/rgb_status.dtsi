@@ -1,0 +1,21 @@
+/*
+ * Copyright (c) 2026 The ZMK Contributors
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <dt-bindings/zmk/behaviors.h>
+
+/ {
+    behaviors {
+#if ZMK_BEHAVIOR_OMIT(RGB_STAT)
+        /omit-if-no-ref/
+#endif
+        // Global behavior labels must fit in the split run-behavior payload.
+        rgb_stat: rgb_stat {
+            compatible = "zmk,behavior-rgb-status";
+            #binding-cells = <0>;
+            display-name = "Show Status";
+        };
+    };
+};
