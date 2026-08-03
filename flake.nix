@@ -37,6 +37,7 @@
           default = zmk.glove80_combined;
 
           glove80-combined = zmk.glove80_combined;
+          glove80-debug = zmk.glove80_debug_combined;
           glove80-left = zmk.glove80_left;
           glove80-right = zmk.glove80_right;
 
