@@ -1,8 +1,14 @@
-{ pkgs ? (import ./pinned-nixpkgs.nix {}) }:
+{
+  pkgs ? (import ./pinned-nixpkgs.nix { }),
+}:
 
 let
   zmkPkgs = (import ../default.nix { inherit pkgs; });
   inherit (zmkPkgs) zmk zephyr;
+
+  zmkStudio =
+    pkgs.lib.optionals (pkgs.lib.meta.availableOn pkgs.stdenv.hostPlatform pkgs.zmk-studio)
+      [ pkgs.zmk-studio ];
 
   zmkCmake = pkgs.writeShellScriptBin "zmk-cmake" ''
     export PATH=${pkgs.lib.makeBinPath zmk.nativeBuildInputs}:$PATH
@@ -13,5 +19,5 @@ let
 in
 pkgs.stdenv.mkDerivation {
   name = "zmk-cmake-shell";
-  nativeBuildInputs = zmk.nativeBuildInputs ++ [zmkCmake];
+  nativeBuildInputs = zmk.nativeBuildInputs ++ [ zmkCmake ] ++ zmkStudio;
 }

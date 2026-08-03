@@ -24,7 +24,7 @@ jobs:
       REVISION_TAG: ${{ github.event.pull_request && github.event.pull_request.head.sha || github.sha  }}
       PR_NUMBER: ${{ github.event.number }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: moergo-sc/zmk
           ref: ${{ github.event.pull_request && github.event.pull_request.head.sha || github.sha }}
@@ -61,7 +61,7 @@ jobs:
       - uses: cachix/install-nix-action@v27
         with:
           nix_path: nixpkgs=channel:nixos-22.05
-      - uses: cachix/cachix-action@v15
+      - uses: cachix/cachix-action@v17
         with:
           name: moergo-glove80-zmk-dev
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
