@@ -42,36 +42,37 @@ makeScope newScope (
 
     glove80_left = zmk.override {
       board = "glove80_lh";
-      snippets = [
-        "studio-rpc-usb-uart"
-        "glove80-status-on-both-halves"
-      ];
+      snippets = [ "studio-rpc-usb-uart" ];
       keymap = (if builtins.pathExists ./config/glove80.keymap then ./config/glove80.keymap else null);
       kconfig = (if builtins.pathExists ./config/glove80.conf then ./config/glove80.conf else null);
     };
 
+    glove80_debug_kconfig = pkgs.writeText "glove80-debug.conf" ''
+      ${builtins.readFile ./config/glove80.conf}
+      ${builtins.readFile ./config/glove80-debug.conf}
+    '';
+
     glove80_debug_left = zmk.override {
       board = "glove80_lh";
-      snippets = [
-        "zmk-usb-logging"
-        "glove80-status-on-both-halves"
-      ];
+      snippets = [ "zmk-usb-logging" ];
       keymap = (if builtins.pathExists ./config/glove80.keymap then ./config/glove80.keymap else null);
-      kconfig = pkgs.writeText "glove80-debug.conf" ''
-        ${builtins.readFile ./config/glove80.conf}
-        ${builtins.readFile ./config/glove80-debug.conf}
-      '';
+      kconfig = glove80_debug_kconfig;
     };
 
     glove80_right = zmk.override {
       board = "glove80_rh";
-      snippets = [ "glove80-status-on-both-halves" ];
       keymap = (if builtins.pathExists ./config/glove80.keymap then ./config/glove80.keymap else null);
       kconfig = (if builtins.pathExists ./config/glove80.conf then ./config/glove80.conf else null);
     };
 
+    glove80_debug_right = zmk.override {
+      board = "glove80_rh";
+      keymap = (if builtins.pathExists ./config/glove80.keymap then ./config/glove80.keymap else null);
+      kconfig = glove80_debug_kconfig;
+    };
+
     glove80_combined = combine_uf2 glove80_left glove80_right "glove80";
-    glove80_debug_combined = combine_uf2 glove80_debug_left glove80_right "glove80";
+    glove80_debug_combined = combine_uf2 glove80_debug_left glove80_debug_right "glove80";
 
     l = glove80_left;
     r = glove80_right;
