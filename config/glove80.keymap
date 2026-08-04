@@ -1743,13 +1743,13 @@ behaviors {
     //
     // Studio-editable home-row modifiers
     //
-    // Normal and bilaterally enforced variants share the same per-finger
-    // tuning. Studio can swap either behavior without replay layers.
+    // Bilateral enforcement is selected at compile time without duplicating
+    // the per-finger behavior nodes or their Studio metadata.
     //
-#ifdef USE_BILATERAL_HOLD_TAPS
-#define HOME_ROW_MOD(name) &name##_bilateral
-#else
 #define HOME_ROW_MOD(name) &name
+
+#ifndef HRM_LINGER_TIME
+#define HRM_LINGER_TIME 100
 #endif
 
 #ifndef LEFT_PINKY_HOLDING_TYPE
@@ -1770,18 +1770,10 @@ behaviors {
         flavor = LEFT_PINKY_HOLDING_TYPE;
         hold-trigger-key-positions = <RIGHT_HAND_KEYS THUMB_KEYS>;
         hold-trigger-on-release;
-        tapping-term-ms = <LEFT_PINKY_HOLDING_TIME>;
-        quick-tap-ms = <LEFT_PINKY_REPEAT_DECAY>;
-        require-prior-idle-ms = <LEFT_PINKY_STREAK_DECAY>;
-        #binding-cells = <2>;
-        bindings = <&kp>, <&kp>;
-    };
-    left_pinky_bilateral: homey_left_pinky_bilateral {
-        compatible = "zmk,behavior-hold-tap-bilateral";
-        display-name = "Left Pinky HRM (Bilateral)";
-        flavor = LEFT_PINKY_HOLDING_TYPE;
-        hold-trigger-key-positions = <RIGHT_HAND_KEYS THUMB_KEYS>;
-        hold-trigger-on-release;
+#ifdef USE_BILATERAL_HOLD_TAPS
+        enforce-bilateral;
+#endif // USE_BILATERAL_HOLD_TAPS
+        linger-ms = <HRM_LINGER_TIME>;
         tapping-term-ms = <LEFT_PINKY_HOLDING_TIME>;
         quick-tap-ms = <LEFT_PINKY_REPEAT_DECAY>;
         require-prior-idle-ms = <LEFT_PINKY_STREAK_DECAY>;
@@ -1806,18 +1798,10 @@ behaviors {
         flavor = RIGHT_PINKY_HOLDING_TYPE;
         hold-trigger-key-positions = <LEFT_HAND_KEYS THUMB_KEYS>;
         hold-trigger-on-release;
-        tapping-term-ms = <RIGHT_PINKY_HOLDING_TIME>;
-        quick-tap-ms = <RIGHT_PINKY_REPEAT_DECAY>;
-        require-prior-idle-ms = <RIGHT_PINKY_STREAK_DECAY>;
-        #binding-cells = <2>;
-        bindings = <&kp>, <&kp>;
-    };
-    right_pinky_bilateral: homey_right_pinky_bilateral {
-        compatible = "zmk,behavior-hold-tap-bilateral";
-        display-name = "Right Pinky HRM (Bilateral)";
-        flavor = RIGHT_PINKY_HOLDING_TYPE;
-        hold-trigger-key-positions = <LEFT_HAND_KEYS THUMB_KEYS>;
-        hold-trigger-on-release;
+#ifdef USE_BILATERAL_HOLD_TAPS
+        enforce-bilateral;
+#endif // USE_BILATERAL_HOLD_TAPS
+        linger-ms = <HRM_LINGER_TIME>;
         tapping-term-ms = <RIGHT_PINKY_HOLDING_TIME>;
         quick-tap-ms = <RIGHT_PINKY_REPEAT_DECAY>;
         require-prior-idle-ms = <RIGHT_PINKY_STREAK_DECAY>;
@@ -1842,18 +1826,10 @@ behaviors {
         flavor = LEFT_RING_HOLDING_TYPE;
         hold-trigger-key-positions = <RIGHT_HAND_KEYS THUMB_KEYS>;
         hold-trigger-on-release;
-        tapping-term-ms = <LEFT_RING_HOLDING_TIME>;
-        quick-tap-ms = <LEFT_RING_REPEAT_DECAY>;
-        require-prior-idle-ms = <LEFT_RING_STREAK_DECAY>;
-        #binding-cells = <2>;
-        bindings = <&kp>, <&kp>;
-    };
-    left_ring_bilateral: homey_left_ring_bilateral {
-        compatible = "zmk,behavior-hold-tap-bilateral";
-        display-name = "Left Ring HRM (Bilateral)";
-        flavor = LEFT_RING_HOLDING_TYPE;
-        hold-trigger-key-positions = <RIGHT_HAND_KEYS THUMB_KEYS>;
-        hold-trigger-on-release;
+#ifdef USE_BILATERAL_HOLD_TAPS
+        enforce-bilateral;
+#endif // USE_BILATERAL_HOLD_TAPS
+        linger-ms = <HRM_LINGER_TIME>;
         tapping-term-ms = <LEFT_RING_HOLDING_TIME>;
         quick-tap-ms = <LEFT_RING_REPEAT_DECAY>;
         require-prior-idle-ms = <LEFT_RING_STREAK_DECAY>;
@@ -1878,18 +1854,10 @@ behaviors {
         flavor = RIGHT_RING_HOLDING_TYPE;
         hold-trigger-key-positions = <LEFT_HAND_KEYS THUMB_KEYS>;
         hold-trigger-on-release;
-        tapping-term-ms = <RIGHT_RING_HOLDING_TIME>;
-        quick-tap-ms = <RIGHT_RING_REPEAT_DECAY>;
-        require-prior-idle-ms = <RIGHT_RING_STREAK_DECAY>;
-        #binding-cells = <2>;
-        bindings = <&kp>, <&kp>;
-    };
-    right_ring_bilateral: homey_right_ring_bilateral {
-        compatible = "zmk,behavior-hold-tap-bilateral";
-        display-name = "Right Ring HRM (Bilateral)";
-        flavor = RIGHT_RING_HOLDING_TYPE;
-        hold-trigger-key-positions = <LEFT_HAND_KEYS THUMB_KEYS>;
-        hold-trigger-on-release;
+#ifdef USE_BILATERAL_HOLD_TAPS
+        enforce-bilateral;
+#endif // USE_BILATERAL_HOLD_TAPS
+        linger-ms = <HRM_LINGER_TIME>;
         tapping-term-ms = <RIGHT_RING_HOLDING_TIME>;
         quick-tap-ms = <RIGHT_RING_REPEAT_DECAY>;
         require-prior-idle-ms = <RIGHT_RING_STREAK_DECAY>;
@@ -1914,18 +1882,10 @@ behaviors {
         flavor = LEFT_MIDDY_HOLDING_TYPE;
         hold-trigger-key-positions = <RIGHT_HAND_KEYS THUMB_KEYS>;
         hold-trigger-on-release;
-        tapping-term-ms = <LEFT_MIDDY_HOLDING_TIME>;
-        quick-tap-ms = <LEFT_MIDDY_REPEAT_DECAY>;
-        require-prior-idle-ms = <LEFT_MIDDY_STREAK_DECAY>;
-        #binding-cells = <2>;
-        bindings = <&kp>, <&kp>;
-    };
-    left_middy_bilateral: homey_left_middy_bilateral {
-        compatible = "zmk,behavior-hold-tap-bilateral";
-        display-name = "Left Middy HRM (Bilateral)";
-        flavor = LEFT_MIDDY_HOLDING_TYPE;
-        hold-trigger-key-positions = <RIGHT_HAND_KEYS THUMB_KEYS>;
-        hold-trigger-on-release;
+#ifdef USE_BILATERAL_HOLD_TAPS
+        enforce-bilateral;
+#endif // USE_BILATERAL_HOLD_TAPS
+        linger-ms = <HRM_LINGER_TIME>;
         tapping-term-ms = <LEFT_MIDDY_HOLDING_TIME>;
         quick-tap-ms = <LEFT_MIDDY_REPEAT_DECAY>;
         require-prior-idle-ms = <LEFT_MIDDY_STREAK_DECAY>;
@@ -1950,18 +1910,10 @@ behaviors {
         flavor = RIGHT_MIDDY_HOLDING_TYPE;
         hold-trigger-key-positions = <LEFT_HAND_KEYS THUMB_KEYS>;
         hold-trigger-on-release;
-        tapping-term-ms = <RIGHT_MIDDY_HOLDING_TIME>;
-        quick-tap-ms = <RIGHT_MIDDY_REPEAT_DECAY>;
-        require-prior-idle-ms = <RIGHT_MIDDY_STREAK_DECAY>;
-        #binding-cells = <2>;
-        bindings = <&kp>, <&kp>;
-    };
-    right_middy_bilateral: homey_right_middy_bilateral {
-        compatible = "zmk,behavior-hold-tap-bilateral";
-        display-name = "Right Middy HRM (Bilateral)";
-        flavor = RIGHT_MIDDY_HOLDING_TYPE;
-        hold-trigger-key-positions = <LEFT_HAND_KEYS THUMB_KEYS>;
-        hold-trigger-on-release;
+#ifdef USE_BILATERAL_HOLD_TAPS
+        enforce-bilateral;
+#endif // USE_BILATERAL_HOLD_TAPS
+        linger-ms = <HRM_LINGER_TIME>;
         tapping-term-ms = <RIGHT_MIDDY_HOLDING_TIME>;
         quick-tap-ms = <RIGHT_MIDDY_REPEAT_DECAY>;
         require-prior-idle-ms = <RIGHT_MIDDY_STREAK_DECAY>;
@@ -1986,18 +1938,10 @@ behaviors {
         flavor = LEFT_INDEX_HOLDING_TYPE;
         hold-trigger-key-positions = <RIGHT_HAND_KEYS THUMB_KEYS>;
         hold-trigger-on-release;
-        tapping-term-ms = <LEFT_INDEX_HOLDING_TIME>;
-        quick-tap-ms = <LEFT_INDEX_REPEAT_DECAY>;
-        require-prior-idle-ms = <LEFT_INDEX_STREAK_DECAY>;
-        #binding-cells = <2>;
-        bindings = <&kp>, <&kp>;
-    };
-    left_index_bilateral: homey_left_index_bilateral {
-        compatible = "zmk,behavior-hold-tap-bilateral";
-        display-name = "Left Index HRM (Bilateral)";
-        flavor = LEFT_INDEX_HOLDING_TYPE;
-        hold-trigger-key-positions = <RIGHT_HAND_KEYS THUMB_KEYS>;
-        hold-trigger-on-release;
+#ifdef USE_BILATERAL_HOLD_TAPS
+        enforce-bilateral;
+#endif // USE_BILATERAL_HOLD_TAPS
+        linger-ms = <HRM_LINGER_TIME>;
         tapping-term-ms = <LEFT_INDEX_HOLDING_TIME>;
         quick-tap-ms = <LEFT_INDEX_REPEAT_DECAY>;
         require-prior-idle-ms = <LEFT_INDEX_STREAK_DECAY>;
@@ -2022,18 +1966,10 @@ behaviors {
         flavor = RIGHT_INDEX_HOLDING_TYPE;
         hold-trigger-key-positions = <LEFT_HAND_KEYS THUMB_KEYS>;
         hold-trigger-on-release;
-        tapping-term-ms = <RIGHT_INDEX_HOLDING_TIME>;
-        quick-tap-ms = <RIGHT_INDEX_REPEAT_DECAY>;
-        require-prior-idle-ms = <RIGHT_INDEX_STREAK_DECAY>;
-        #binding-cells = <2>;
-        bindings = <&kp>, <&kp>;
-    };
-    right_index_bilateral: homey_right_index_bilateral {
-        compatible = "zmk,behavior-hold-tap-bilateral";
-        display-name = "Right Index HRM (Bilateral)";
-        flavor = RIGHT_INDEX_HOLDING_TYPE;
-        hold-trigger-key-positions = <LEFT_HAND_KEYS THUMB_KEYS>;
-        hold-trigger-on-release;
+#ifdef USE_BILATERAL_HOLD_TAPS
+        enforce-bilateral;
+#endif // USE_BILATERAL_HOLD_TAPS
+        linger-ms = <HRM_LINGER_TIME>;
         tapping-term-ms = <RIGHT_INDEX_HOLDING_TIME>;
         quick-tap-ms = <RIGHT_INDEX_REPEAT_DECAY>;
         require-prior-idle-ms = <RIGHT_INDEX_STREAK_DECAY>;
