@@ -47,8 +47,8 @@ properties:
     type: boolean
   enforce-bilateral:
     type: boolean
-    description: Keep enforcing hold trigger positions after a hold decision on split keyboards
+    description: Keep enforcing hold trigger positions after a hold decision and disable linger on split keyboards
   linger-ms:
     type: int
     default: 0
-    description: Time to keep the hold child pressed after a resolved hold is released
+    description: Time to keep the hold child pressed after release when bilateral enforcement is inactive

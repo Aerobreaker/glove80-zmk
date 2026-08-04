@@ -609,7 +609,11 @@ static void begin_linger(struct active_hold_tap *hold_tap,
         return;
     }
 
-    if (hold_tap->config->linger_ms <= 0) {
+    // Bilateral enforcement is intentionally strict: once the physical hold-tap
+    // is released, no same-side (including same-position) key may inherit its
+    // hold. On non-split builds enforce_bilateral is initialized to false, so a
+    // shared node containing both properties still gets normal linger behavior.
+    if (hold_tap->config->enforce_bilateral || hold_tap->config->linger_ms <= 0) {
         release_hold_binding(hold_tap);
         clear_hold_tap(hold_tap);
         return;
@@ -893,7 +897,7 @@ static int on_hold_tap_binding_released(struct zmk_behavior_binding *binding,
 
     if (is_hold_status(hold_tap)) {
         begin_linger(hold_tap, &event);
-        if (hold_tap->config->linger_ms <= 0) {
+        if (hold_tap->config->enforce_bilateral || hold_tap->config->linger_ms <= 0) {
             LOG_DBG("%d cleaning up hold-tap", event.position);
         }
     } else {

@@ -1,10 +1,12 @@
 linger_pressed: 0 new undecided hold_tap
 decision: 0 decided hold-timer (tap-preferred decision moment timer)
 kp_pressed: usage_page 0x07 keycode 0xE1 implicit_mods 0x00 explicit_mods 0x00
-kp_released: usage_page 0x07 keycode 0xE1 implicit_mods 0x00 explicit_mods 0x00
-linger_released: 0 cleaning up hold-tap
+linger_state: armed for 150 ms
+linger_state: consumed
 linger_pressed: 0 new undecided hold_tap
+linger_pressed: 0 inherited lingering hold
 decision: 0 decided tap (tap-preferred decision moment key-up)
 kp_pressed: usage_page 0x07 keycode 0x09 implicit_mods 0x00 explicit_mods 0x00
 kp_released: usage_page 0x07 keycode 0x09 implicit_mods 0x00 explicit_mods 0x00
+kp_released: usage_page 0x07 keycode 0xE1 implicit_mods 0x00 explicit_mods 0x00
 linger_released: 0 cleaning up hold-tap
