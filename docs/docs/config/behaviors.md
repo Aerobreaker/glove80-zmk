@@ -85,6 +85,8 @@ Applies to: `compatible = "zmk,behavior-hold-tap"`
 | `hold-while-undecided-linger` | bool     | Continues to hold the hold behavior until after the tap is released                                           | false              |
 | `hold-trigger-key-positions`  | array    | If set, pressing the hold-tap and then any key position _not_ in the list triggers a tap                      |                    |
 | `hold-trigger-on-release`     | bool     | If set, delays the evaluation of `hold-trigger-key-positions` until key release                               | false              |
+| `enforce-bilateral`           | bool     | On split keyboards, keeps enforcing `hold-trigger-key-positions` after the hold decision                      | false              |
+| `linger-ms`                   | int      | Keeps a resolved hold behavior active for this long after the hold-tap key is released                        | 0 (disabled)       |
 
 This behavior forwards the first parameter it receives to the parameter of the first behavior specified in `bindings`, and second parameter to the parameter of the second behavior.
 

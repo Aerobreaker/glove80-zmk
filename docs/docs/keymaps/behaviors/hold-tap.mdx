@@ -277,6 +277,29 @@ This value defines how long a key must be pressed to trigger the "hold" behavior
 };
 ```
 
+### `linger-ms`
+
+After a hold-tap resolves as a hold, `linger-ms` keeps the hold behavior pressed for the
+configured interval after the physical key is released. The default is `0`, which disables
+lingering and preserves normal hold-tap behavior.
+
+```dts
+&mt {
+    linger-ms = <150>;
+};
+```
+
+Pressing a different physical key during the interval releases the lingering hold before that
+key is processed. Pressing the same physical key transfers the existing hold into a fresh
+hold-tap decision without invoking the hold behavior twice. If that decision becomes a tap, the
+tap behavior is pressed and released while the hold behavior remains active, and then the hold
+behavior is released. If it becomes another hold, the existing hold remains active and a new
+linger interval starts when the physical key is released again.
+
+Lingering works with any behaviors accepted by the normal hold-tap `bindings` property, including
+key presses, layer behaviors, and other one-parameter behaviors. The same-position transfer
+requires the new invocation to resolve to a hold-tap with the same hold behavior and parameter.
+
 ### Using different behavior types with hold-taps
 
 You can create instances of hold-taps invoking most [behavior types](../index.mdx#behaviors) for hold or tap actions, by referencing their node labels in the `bindings` value.
@@ -423,13 +446,13 @@ If set, instead of the keys **not** listed in `hold-trigger-key-positions` produ
 };
 ```
 
-### Bilateral hold-tap
+### Bilateral enforcement (`enforce-bilateral`)
 
 By default, `hold-trigger-key-positions` only affects a hold-tap until its tapping term
 expires. After that, a timer-decided hold remains active regardless of which key is pressed.
 
-Use the `zmk,behavior-hold-tap-bilateral` behavior to keep enforcing the positional
-restriction until the hold-tap key is released. If a decided hold is active and a
+Add `enforce-bilateral;` to keep enforcing the positional restriction until the
+hold-tap key is released on a split keyboard. If a decided hold is active and a
 non-bilateral hold-tap key outside
 `hold-trigger-key-positions` is pressed, the hold behavior is released and the hold-tap is
 converted to its tap behavior before the new key is processed.
@@ -441,13 +464,14 @@ their tap behaviors before emitting the new tap.
 
 ```dts
 bilateral_mt: bilateral_mod_tap {
-    compatible = "zmk,behavior-hold-tap-bilateral";
+    compatible = "zmk,behavior-hold-tap";
     #binding-cells = <2>;
     flavor = "tap-preferred";
     tapping-term-ms = <280>;
     bindings = <&kp>, <&kp>;
     hold-trigger-key-positions = < ... >;
     hold-trigger-on-release;
+    enforce-bilateral;
 };
 ```
 
@@ -455,9 +479,8 @@ This is useful for strict bilateral home-row modifiers because even a modifier h
 tapping term will only modify keys in the configured positions, while same-hand modifier
 chords remain available.
 
-On a non-split keyboard, this compatible behaves exactly like a regular
-`zmk,behavior-hold-tap`. This lets shared keymaps use bilateral hold-taps without changing
-the behavior of non-split boards.
+On a non-split keyboard, `enforce-bilateral` has no effect. This lets shared keymaps use
+the property without changing the behavior of non-split boards.
 
 ### `hold-while-undecided`
 

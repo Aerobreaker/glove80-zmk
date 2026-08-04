@@ -4,13 +4,13 @@
 
 / {
     behaviors {
-        btp: behavior_bilateral_tap_preferred {
+        blht: behavior_bilateral_linger_hold_tap {
             compatible = "zmk,behavior-hold-tap";
             enforce-bilateral;
             #binding-cells = <2>;
             flavor = "tap-preferred";
-            tapping-term-ms = <300>;
-            quick-tap-ms = <200>;
+            tapping-term-ms = <200>;
+            linger-ms = <150>;
             bindings = <&kp>, <&kp>;
             hold-trigger-key-positions = <2>;
             hold-trigger-on-release;
@@ -19,11 +19,20 @@
 
     keymap {
         compatible = "zmk,keymap";
-
         default_layer {
             bindings = <
-                &btp LEFT_SHIFT F &btp LEFT_CONTROL J
-                &kp D &kp E>;
+                &blht LSHIFT F &blht LCTRL J
+                &mt LSHIFT D &kp E
+            >;
         };
     };
+};
+
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(0, 0, 10)
+        ZMK_MOCK_PRESS(1, 1, 250)
+        ZMK_MOCK_RELEASE(1, 1, 10)
+        ZMK_MOCK_RELEASE(0, 0, 10)
+    >;
 };

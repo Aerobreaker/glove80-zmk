@@ -45,3 +45,10 @@ properties:
     default: []
   hold-trigger-on-release:
     type: boolean
+  enforce-bilateral:
+    type: boolean
+    description: Keep enforcing hold trigger positions after a hold decision on split keyboards
+  linger-ms:
+    type: int
+    default: 0
+    description: Time to keep the hold child pressed after a resolved hold is released

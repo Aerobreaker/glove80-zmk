@@ -1,0 +1,14 @@
+#include "../behavior_keymap.dtsi"
+
+&lht {
+    hold-trigger-key-positions = <2>;
+};
+
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(0, 0, 20)
+        ZMK_MOCK_PRESS(0, 1, 250)
+        ZMK_MOCK_RELEASE(0, 1, 10)
+        ZMK_MOCK_RELEASE(0, 0, 10)
+    >;
+};
