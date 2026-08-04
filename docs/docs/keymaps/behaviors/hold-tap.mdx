@@ -300,6 +300,11 @@ Lingering works with any behaviors accepted by the normal hold-tap `bindings` pr
 key presses, layer behaviors, and other one-parameter behaviors. The same-position transfer
 requires the new invocation to resolve to a hold-tap with the same hold behavior and parameter.
 
+On split keyboards, [`enforce-bilateral`](#bilateral-enforcement-enforce-bilateral) takes
+precedence over `linger-ms`: a resolved hold is released immediately with the physical key and
+cannot be inherited by a same-position press. On non-split keyboards, `enforce-bilateral` has no
+effect, so a node containing both properties still uses its configured linger interval.
+
 ### Using different behavior types with hold-taps
 
 You can create instances of hold-taps invoking most [behavior types](../index.mdx#behaviors) for hold or tap actions, by referencing their node labels in the `bindings` value.
@@ -479,8 +484,11 @@ This is useful for strict bilateral home-row modifiers because even a modifier h
 tapping term will only modify keys in the configured positions, while same-hand modifier
 chords remain available.
 
-On a non-split keyboard, `enforce-bilateral` has no effect. This lets shared keymaps use
-the property without changing the behavior of non-split boards.
+On a split keyboard, `enforce-bilateral` also disables `linger-ms`. Releasing the hold-tap
+releases its hold behavior immediately, so a later press of the same physical position cannot
+inherit it. On a non-split keyboard, `enforce-bilateral` has no effect, including no effect on
+lingering. This lets shared keymaps use both properties while receiving strict bilateral behavior
+on split boards and normal linger behavior on non-split boards.
 
 ### `hold-while-undecided`
 
