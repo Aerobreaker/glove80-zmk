@@ -1,8 +1,0 @@
-# Copyright (c) 2026 The ZMK Contributors
-# SPDX-License-Identifier: MIT
-
-description: Bilaterally enforced Hold or Tap behavior
-
-compatible: "zmk,behavior-hold-tap-bilateral"
-
-include: hold-tap-base.yaml

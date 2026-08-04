@@ -1,0 +1,45 @@
+#include <dt-bindings/zmk/keys.h>
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/kscan_mock.h>
+
+/ {
+    behaviors {
+        lht_layer: behavior_linger_hold_tap_layer {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <200>;
+            linger-ms = <150>;
+            bindings = <&mo>, <&kp>;
+        };
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        default_layer {
+            bindings = <
+                &lht_layer 1 A &kp B
+                &kp D &mt LSHIFT E
+            >;
+        };
+
+        test_layer {
+            bindings = <
+                &lht_layer 1 A &kp C
+                &kp D &mt LSHIFT E
+            >;
+        };
+    };
+};
+
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(0, 0, 250)
+        ZMK_MOCK_RELEASE(0, 0, 50)
+        ZMK_MOCK_PRESS(0, 0, 50)
+        ZMK_MOCK_RELEASE(0, 0, 50)
+        ZMK_MOCK_PRESS(0, 1, 10)
+        ZMK_MOCK_RELEASE(0, 1, 10)
+    >;
+};

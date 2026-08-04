@@ -4,26 +4,31 @@
 
 / {
     behaviors {
-        btp: behavior_bilateral_tap_preferred {
+        lht_zero: behavior_linger_hold_tap_zero_default {
             compatible = "zmk,behavior-hold-tap";
-            enforce-bilateral;
             #binding-cells = <2>;
             flavor = "tap-preferred";
-            tapping-term-ms = <300>;
-            quick-tap-ms = <200>;
+            tapping-term-ms = <200>;
             bindings = <&kp>, <&kp>;
-            hold-trigger-key-positions = <2>;
-            hold-trigger-on-release;
         };
     };
 
     keymap {
         compatible = "zmk,keymap";
-
         default_layer {
             bindings = <
-                &btp LEFT_SHIFT F &btp LEFT_CONTROL J
-                &kp D &kp E>;
+                &lht_zero A B &kp C
+                &kp D &mt LSHIFT E
+            >;
         };
     };
+};
+
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(0, 0, 250)
+        ZMK_MOCK_RELEASE(0, 0, 50)
+        ZMK_MOCK_PRESS(0, 1, 10)
+        ZMK_MOCK_RELEASE(0, 1, 10)
+    >;
 };

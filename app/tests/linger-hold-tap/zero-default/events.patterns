@@ -1,0 +1,4 @@
+s/.*hid_listener_keycode/kp/p
+s/.*on_hold_tap_binding/linger/p
+s/.*decide_hold_tap/decision/p
+s/.*linger disabled/linger_state: disabled/p

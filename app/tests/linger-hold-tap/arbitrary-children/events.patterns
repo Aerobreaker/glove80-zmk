@@ -1,0 +1,5 @@
+s/.*hid_listener_keycode/kp/p
+s/.*on_hold_tap_binding/linger/p
+s/.*decide_hold_tap/decision/p
+s/.*same-position press consumed lingering hold/linger_state: consumed/p
+s/.*lingering hold armed/linger_state: armed/p

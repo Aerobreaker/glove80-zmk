@@ -1,0 +1,14 @@
+#include "../behavior_keymap.dtsi"
+
+&lht {
+    require-prior-idle-ms = <100>;
+};
+
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(1, 0, 10)
+        ZMK_MOCK_RELEASE(1, 0, 10)
+        ZMK_MOCK_PRESS(0, 0, 50)
+        ZMK_MOCK_RELEASE(0, 0, 250)
+    >;
+};
